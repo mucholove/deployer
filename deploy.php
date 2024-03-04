@@ -1,6 +1,8 @@
 <?php
 
-$autoloadFile = dirname(__FILE__, 3)."/vendor/autoload.php";
+$rootLevel    = dirname(__FILE__, 4);
+$vendorLevel  = dirname(__FILE__, 3);
+$autoloadFile = $rootLevel."/vendor/autoload.php";
 
 echo $autoloadFile."\n";
 
