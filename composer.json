@@ -1,14 +1,14 @@
 {
-    "name": "stonewood/stonewood-app-deployer",
-    "description": "Deploys Stonewood App",
+    "name": "mucholove/deployer",
+    "description": "Deploys Apps",
     "type": "project",
     "require": {
         "phpseclib/phpseclib": "^3.0"
     },
-    "license": "Private",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Stonewood\\StonewoodAppDeployer\\": "src/"
+            "Mucholove\\Deployer\\": "src/"
         }
     },
     "authors": [
