@@ -1,0 +1,21 @@
+{
+    "name": "stonewood/stonewood-app-deployer",
+    "description": "Deploys Stonewood App",
+    "type": "project",
+    "require": {
+        "phpseclib/phpseclib": "^3.0"
+    },
+    "license": "Private",
+    "autoload": {
+        "psr-4": {
+            "Stonewood\\StonewoodAppDeployer\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Gustavo Tavares",
+            "email": "gustavo@froml.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}
