@@ -1,6 +1,6 @@
 <?php
 
-$autoloadFile = dirname(__FILE__)."/vendor/autoload.php";
+$autoloadFile = dirname(__FILE__, 3)."/vendor/autoload.php";
 
 echo $autoloadFile."\n";
 
