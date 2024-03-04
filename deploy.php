@@ -206,9 +206,10 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
     $restartCommand = new ScriptCommand('systemctl restart apache2');
 }
 
+$vendorName  = "mucholove";
+$libraryName = "deployer";
 
-
-$generateToConfScriptPath  = $newFolderPath.'\deployer\generateApacheConfToPath.php"';
+$generateToConfScriptPath  = $newFolderPath.'/vendor/'.$vendorName.'/'.$libraryName.'/generateApacheConfToPath.php"';
 
 $generateConfString  = '';
 $generateConfString .= 'php '.$generateToConfScriptPath;
