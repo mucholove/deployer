@@ -101,6 +101,10 @@ else if (isset($SERVER_CONFIG["password"]))
 
 echo "Will attempt connection...\n";
 
+$host                      = $SERVER_CONFIG["host"];
+$port                      = $SERVER_CONFIG["port"];
+$username                  = $SERVER_CONFIG["username"];
+
 $ssh = new SSH2($host, $port ?? 22);
 
 switch ($method) 
@@ -152,9 +156,7 @@ checkIfKeysExistOrDie([
 ], $SERVER_CONFIG);
 
 
-$host                      = $SERVER_CONFIG["host"];
-$port                      = $SERVER_CONFIG["port"];
-$username                  = $SERVER_CONFIG["username"];
+
 $password                  = $SERVER_CONFIG["password"];
 $githubPersonalAccessToken = $SERVER_CONFIG["githubPersonalAccessToken"];
 $apacheConfigFilePath      = $SERVER_CONFIG["APACHE_CONFIG_PATH"];
@@ -164,10 +166,6 @@ $certificateKeyFile        = $SERVER_CONFIG["certificateKeyFile"];
 $repo                      = $SERVER_CONFIG["gitHubRepo"];
 $repoToServerPathBase      = $SERVER_CONFIG["repoToServerPathBase"];
 $composerAuthJSONPath      = $SERVER_CONFIG["composerAuthJSONPath"];
-
-
-
-
 
 // $timezone = date_default_timezone_get();
 $timezone = "America/Santo_Domingo";
