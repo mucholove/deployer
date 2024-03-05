@@ -18,7 +18,7 @@ if ($argc < 2)
 }
 
 $serverName = $argv[1]; // Get the server name from the command-line argument
-$credentialsFilePath = dirname(__FILE__,2) . "/.secret/servers/$serverName.php";
+$credentialsFilePath = $rootLevel."/.secret/servers/$serverName.php";
 
 echo "Looking for credentials file path at: ".$credentialsFilePath."\n";
 
@@ -64,12 +64,87 @@ function checkIfKeysExistOrDie($requiredKeys, $config) {
 checkIfKeysExistOrDie([
     "host", 
     "port", 
-    "username", 
-    "password",
-    "githubPersonalAccessToken",
+    "username",
+], $SERVER_CONFIG);
+
+$hasServerAuthenticationMethod = false;
+
+enum SSHAuthMethod: string
+{
+    case None = 'none';
+    case Password = 'password';
+    case PublicKey = 'public-key';
+    case PasswordProtectedPublicKey = 'password-protected-public-key';
+    case KeyboardInteractive = 'keyboard-interactive';
+    case Agent = 'agent';
+}
+
+$serverAuthenticationMethod = SSHAuthMethod::None; 
+    
+// https://phpseclib.com/docs/auth
+if (isset($SEVER_CONFIG["certificateFile"]))
+{
+    if (isset($SERVER_CONFIG["certificateKeyFile"]))
+    {
+        $serverAuthenticationMethod = SSHAuthMethod::PublicKey;
+
+        if (isset($SERVER_CONFIG["password"]))
+        {
+            $serverAuthenticationMethod = SSHAuthMethod::PasswordProtectedPublicKey;
+        }
+    }
+}
+else if (isset($SERVER_CONFIG["password"]))
+{
+    $serverAuthenticationMethod = SSHAuthMethod::Password;
+}
+
+echo "Will attempt connection...\n";
+
+$ssh = new SSH2($host, $port ?? 22);
+
+switch ($method) 
+{
+    case SSHAuthMethod::Password:
+        $ssh->login($SERVER_CONFIG['username'], 
+                    $SERVER_CONFIG['password']);
+        break;
+    case SSHAuthMethod::PublicKey:
+        $keyBinary = file_get_contents($SERVER_CONFIG["certificateKeyFile"]);
+        $key       = PublicKeyLoader::load($keyBinary);
+
+        $ssh->login($SERVER_CONFIG['username'], 
+                    $key);
+        break;
+    case SSHAuthMethod::PasswordProtectedPublicKey:
+        $password  = $SERVER_CONFIG['password'];
+        $keyBinary = file_get_contents($SERVER_CONFIG["certificateKeyFile"], $password);
+        $key       = PublicKeyLoader::load($keyBinary);
+
+        $ssh->login($SERVER_CONFIG['username'], 
+                    $key);
+        break;
+    case SSHAuthMethod::KeyboardInteractive:
+        throw new Exception("TODO - Keyboard Interactive");
+        break;
+    case SSHAuthMethod::Agent:
+        // Handle authentication using SSH agent
+        // $agent = new \phpseclib3\System\SSH\Agent();
+        // $ssh->login('username', $agent);
+        throw new Exception("TODO - SSH Agent");
+        break;
+}
+
+
+if (!$ssh->isConnected()) 
+{
+    throw new Exception("Authentication failed or unable to connect.");
+}
+
+
+checkIfKeysExistOrDie([
     "APACHE_CONFIG_PATH",
-    "certificateFile",
-    "certificateKeyFile",
+    "githubPersonalAccessToken",
     "serverName",
     "gitHubRepo",
     "repoToServerPathBase",
@@ -91,15 +166,7 @@ $repoToServerPathBase      = $SERVER_CONFIG["repoToServerPathBase"];
 $composerAuthJSONPath      = $SERVER_CONFIG["composerAuthJSONPath"];
 
 
-echo "Will attempt connection...\n";
 
-$ssh = new SSH2($host, $port ?? 22);
-
-// Authenticate
-if (!$ssh->login($username, $password)) 
-{
-    die('Authentication failed\n');
-}
 
 
 // $timezone = date_default_timezone_get();
