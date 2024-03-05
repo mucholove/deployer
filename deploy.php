@@ -107,7 +107,7 @@ $username                  = $SERVER_CONFIG["username"];
 
 $ssh = new SSH2($host, $port ?? 22);
 
-switch ($method) 
+switch ($serverAuthenticationMethod) 
 {
     case SSHAuthMethod::Password:
         $ssh->login($SERVER_CONFIG['username'], 
