@@ -249,6 +249,7 @@ $cloneCommand = "cd \"$newFolderPath\" && git clone https://$githubPersonalAcces
 
 $gitCommand = new ScriptCommand($cloneCommand);
 $gitCommand->onErrorClosure = $removeRepoDirectoryClosure;
+$gitCommand->errorHandler = function (){};
 
 
 $documentRoot = $newFolderPath.'\www';
