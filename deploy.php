@@ -280,7 +280,10 @@ $generateConfString .= ' "'.$certificateKeyFile.'"';
 
 
 $generateConfCommand = new ScriptCommand($generateConfString);
-$generateConfCommand->errorHandler = function ($output) {
+$generateConfCommand->onErrorClosure = $removeRepoDirectoryClosure;
+
+$composerInstallCommand = new ScriptCommand("cd \"$newFolderPath\" && composer install");
+$composerInstallCommand->errorHandler = function ($output) {
     $tests = [
         strpos($output, 'error') !== false,
         strpos($output, 'repository does not exist') !== false,
@@ -297,14 +300,12 @@ $generateConfCommand->errorHandler = function ($output) {
         return null;
     }
 };
-$generateConfCommand->onErrorClosure = $removeRepoDirectoryClosure;
-
 
 $commands = [
     new ScriptCommand("mkdir \"$newFolderPath\""),
     $gitCommand,
     "copy \"$composerAuthJSONPath\" \"$newFolderPath\"",  
-    "cd \"$newFolderPath\" && composer install",
+    $composerInstallCommand,
     "cd \"$newFolderPath\\deployer\" && composer install",
     $generateConfCommand,
     $restartCommand,
