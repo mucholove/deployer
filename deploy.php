@@ -196,7 +196,7 @@ class ScriptCommand
         if ($this->errorHandler)
         {
             $errorHandler = $this->errorHandler;
-            return $errorHandler($output);
+            return $errorHandler($this, $output);
         }
         else
         {
@@ -249,7 +249,7 @@ $cloneCommand = "cd \"$newFolderPath\" && git clone https://$githubPersonalAcces
 
 $gitCommand = new ScriptCommand($cloneCommand);
 $gitCommand->onErrorClosure = $removeRepoDirectoryClosure;
-$gitCommand->errorHandler = function (){};
+$gitCommand->errorHandler = function ($scriptCommand, $output){};
 
 
 $documentRoot = $newFolderPath.'\www';
@@ -283,7 +283,7 @@ $generateConfCommand = new ScriptCommand($generateConfString);
 $generateConfCommand->onErrorClosure = $removeRepoDirectoryClosure;
 
 $composerInstallCommand = new ScriptCommand("cd \"$newFolderPath\" && composer install");
-$composerInstallCommand->errorHandler = function ($output) {
+$composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
     $tests = [
         strpos($output, 'error') !== false,
         strpos($output, 'repository does not exist') !== false,
@@ -293,7 +293,7 @@ $composerInstallCommand->errorHandler = function ($output) {
 
     if ($hasError)
     {
-        return "Error executing command: $this->command. Output: $output\n";
+        return "Error executing command: $scriptCommand->command. Output: $output\n";
     }
     else
     {
