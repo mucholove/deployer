@@ -243,21 +243,11 @@ $removeRepoDirectoryClosure = function() use ($ssh, $newFolderPath) {
     $ssh->exec('rm "'.$newFolderPath.'"');
 };
 
-$gitCloneErrorHandler = function ($output) {
-    /*
-    if (strpos($output, 'fatal:') !== false || empty($output)) {
-        die("Error cloning repository. Git output: $output\n");
-    }
-    */
-};
-
-
 
 $cloneCommand = "cd \"$newFolderPath\" && git clone https://$githubPersonalAccessToken:x-oauth-basic@$repo .";
 // Execute the command with $ssh->exec()
 
 $gitCommand = new ScriptCommand($cloneCommand);
-$gitCommand->errorHandler = $gitCloneErrorHandler;
 $gitCommand->onErrorClosure = $removeRepoDirectoryClosure;
 
 
@@ -265,9 +255,11 @@ $documentRoot = $newFolderPath.'\www';
 
 $restartCommand = null;
 
+$xamppExePath = 'C:\xampp\xampp-control.exe';
+
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') 
 {
-    $restartCommand = new ScriptCommand('cd C:\xampp\xampp-control.exe /restart');
+    $restartCommand = new ScriptCommand('cd "'.$xamppExePath.'" /restart');
 } else {
     $restartCommand = new ScriptCommand('systemctl restart apache2');
 }
@@ -286,13 +278,34 @@ $generateConfString .= ' "'.$certificateFile.'"';
 $generateConfString .= ' "'.$certificateKeyFile.'"';
 
 
+$generateConfCommand = new ScriptCommand($generateConfString);
+$generateConfCommand->errorHandler = function ($output) {
+    $tests = [
+        strpos($output, 'error') !== false,
+        strpos($output, 'repository does not exist') !== false,
+    ];
+
+    $hasError = !empty(array_filter($tests));
+
+    if ($hasError)
+    {
+        return "Error executing command: $this->command. Output: $output\n";
+    }
+    else
+    {
+        return null;
+    }
+};
+$generateConfCommand->onErrorClosure = $removeRepoDirectoryClosure;
+
+
 $commands = [
     new ScriptCommand("mkdir \"$newFolderPath\""),
     $gitCommand,
     "copy \"$composerAuthJSONPath\" \"$newFolderPath\"",  
     "cd \"$newFolderPath\" && composer install",
     "cd \"$newFolderPath\\deployer\" && composer install",
-    $generateConfString,
+    $generateConfCommand,
     $restartCommand,
 ];
 
