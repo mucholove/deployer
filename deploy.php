@@ -275,15 +275,15 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
 $vendorName  = "mucholove";
 $libraryName = "deployer";
 
-$generateToConfScriptPath  = $newFolderPath.'/vendor/'.$vendorName.'/'.$libraryName.'/generateApacheConfToPath.php"';
+$generateToConfScriptPath  = $newFolderPath.'/vendor/'.$vendorName.'/'.$libraryName.'/generateApacheConfToPath.php';
 
 $generateConfString  = '';
-$generateConfString .= 'php '.$generateToConfScriptPath;
-$generateConfString .= ' '.$documentRoot;
-$generateConfString .= ' '.$apacheConfigFilePath;
-$generateConfString .= ' '.$serverName;         
-$generateConfString .= ' '.$certificateFile;    
-$generateConfString .= ' '.$certificateKeyFile;
+$generateConfString .= 'php "'.$generateToConfScriptPath.'"';
+$generateConfString .= ' "'.$documentRoot.'"';
+$generateConfString .= ' "'.$apacheConfigFilePath.'"';
+$generateConfString .= ' "'.$serverName.'"';         
+$generateConfString .= ' "'.$certificateFile.'"';    
+$generateConfString .= ' "'.$certificateKeyFile.'"';
 
 
 $commands = [
