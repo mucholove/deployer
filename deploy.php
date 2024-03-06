@@ -145,7 +145,6 @@ if (!$ssh->isConnected())
     throw new Exception("Authentication failed or unable to connect.");
 }
 
-
 checkIfKeysExistOrDie([
     "APACHE_CONFIG_PATH",
     "githubPersonalAccessToken",
@@ -304,7 +303,7 @@ $baseScriptCommand->onErrorClosure = $removeRepoDirectoryClosure;
 foreach ($commands as $command) 
 {
     $toExecute = null;
-    if (is_string($commad))
+    if (is_string($command))
     {
         $baseScriptCommand->command = $command; 
         $toExecute = $baseScriptCommand;
