@@ -125,17 +125,15 @@ switch ($serverAuthenticationMethod)
         break;
     case SSHAuthMethod::PasswordProtectedPublicKey:
         $filePath = $SERVER_CONFIG["SSHPrivateKeyFile"];
-        if ($debug)
-        {
+        if ($debug) {
             echo "Using password protected public key\n";
             echo "Key file path: $filePath\n";
         }
         $password  = $SERVER_CONFIG['password'];
-        $keyBinary = file_get_contents($filePath, $password);
-        $key       = \phpseclib3\Crypt\PublicKeyLoader::load($keyBinary);
-
-        $ssh->login($SERVER_CONFIG['username'], 
-                    $key);
+        $keyBinary = file_get_contents($filePath);
+        $key = \phpseclib3\Crypt\PublicKeyLoader::load($keyBinary, $password);
+    
+        $ssh->login($SERVER_CONFIG['username'], $key);
         break;
     case SSHAuthMethod::KeyboardInteractive:
         throw new Exception("TODO - Keyboard Interactive");
