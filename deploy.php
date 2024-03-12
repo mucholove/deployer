@@ -82,16 +82,13 @@ enum SSHAuthMethod: string
 $serverAuthenticationMethod = SSHAuthMethod::None; 
     
 // https://phpseclib.com/docs/auth
-if (isset($SEVER_CONFIG["certificateFile"]))
+if (isset($SEVER_CONFIG["SSHCertificateFile"]))
 {
-    if (isset($SERVER_CONFIG["certificateKeyFile"]))
+    $serverAuthenticationMethod = SSHAuthMethod::PublicKey;
+    
+    if (isset($SERVER_CONFIG["password"]))
     {
-        $serverAuthenticationMethod = SSHAuthMethod::PublicKey;
-
-        if (isset($SERVER_CONFIG["password"]))
-        {
-            $serverAuthenticationMethod = SSHAuthMethod::PasswordProtectedPublicKey;
-        }
+        $serverAuthenticationMethod = SSHAuthMethod::PasswordProtectedPublicKey;
     }
 }
 else if (isset($SERVER_CONFIG["password"]))
@@ -144,6 +141,10 @@ if (!$ssh->isConnected())
 {
     throw new Exception("Authentication failed or unable to connect.");
 }
+else
+{
+    echo "Connected to $host\n";
+}
 
 checkIfKeysExistOrDie([
     "APACHE_CONFIG_PATH",
@@ -191,8 +192,15 @@ class ScriptCommand
         $this->errorHandler = $errorHandler;
     }
 
-    function hasError($output)
+    function hasError($ssh, $output)
     {
+        $exitStatus = $ssh->getExitStatus();
+
+        if ($exitStatus !== 0)
+        {
+            return "Error executing command: $this->command. Exit status: $exitStatus. Output: $output\n";
+        }
+
         if ($this->errorHandler)
         {
             $errorHandler = $this->errorHandler;
@@ -219,7 +227,7 @@ class ScriptCommand
 
         $returnValue = $ssh->exec($finalCommand);
 
-        $errorMessage = $this->hasError($returnValue);
+        $errorMessage = $this->hasError($ssh, $returnValue);
     
         if ($errorMessage)
         {
@@ -256,13 +264,17 @@ $documentRoot = $newFolderPath.'\www';
 
 $restartCommand = null;
 
-$xamppExePath = 'C:\xampp\xampp-control.exe';
+$serverOS = $SERVER_CONFIG["SERVER_OS"] ?? "windows";
 
-if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') 
+switch ($serverOS)
 {
-    $restartCommand = new ScriptCommand('cd "'.$xamppExePath.'" /restart');
-} else {
-    $restartCommand = new ScriptCommand('systemctl restart apache2');
+    case "windows":
+        $xamppExePath = 'C:\xampp\xampp-control.exe';
+        $restartCommand = new ScriptCommand('cd "'.$xamppExePath.'" /restart');
+        break;
+    case "linux":
+        $restartCommand = new ScriptCommand('systemctl restart apache2');
+        break;
 }
 
 $vendorName  = "mucholove";
@@ -306,7 +318,6 @@ $commands = [
     $gitCommand,
     "copy \"$composerAuthJSONPath\" \"$newFolderPath\"",  
     $composerInstallCommand,
-    "cd \"$newFolderPath\\deployer\" && composer install",
     $generateConfCommand,
     $restartCommand,
 ];
