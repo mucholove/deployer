@@ -198,7 +198,8 @@ class ScriptCommand
 
         if ($exitStatus !== 0)
         {
-            return "Error executing command: $this->command. Exit status: $exitStatus. Output: $output\n";
+            $stdErr = $ssh->getStdError();
+            return "Error executing command: $this->command. Exit status: $exitStatus. Output: $output. Std-Err: $stdErr \n";
         }
 
         if ($this->errorHandler)
