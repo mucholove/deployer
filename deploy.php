@@ -315,7 +315,7 @@ $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
 };
 
 $commands = [
-    new ScriptCommand("mkdir \"$newFolderPath\""),
+    new ScriptCommand("mkdir -p \"$newFolderPath\""),
     $gitCommand,
     "copy \"$composerAuthJSONPath\" \"$newFolderPath\"",  
     $composerInstallCommand,
