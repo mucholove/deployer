@@ -137,11 +137,20 @@ switch ($serverAuthenticationMethod)
 
 if (!$ssh->isConnected()) 
 {
-    throw new Exception("Authentication failed or unable to connect.");
+    throw new Exception("Unable to connect.");
 }
 else
 {
     echo "Connected to $host\n";
+}
+
+if (!$ssh->isAuthenticated())
+{
+    throw new Exception("Authentication failed.");
+}
+else
+{
+    echo "Authenticated.\n";
 }
 
 checkIfKeysExistOrDie([
