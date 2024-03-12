@@ -10,6 +10,7 @@ require $autoloadFile;
 
 use phpseclib3\Net\SSH2;
 
+use function Deployer\error;
 use function PHPSTORM_META\map;
 
 if ($argc < 2) 
@@ -227,11 +228,19 @@ class ScriptCommand
 
     public function executeOrDieOnSSH($ssh, $closure = null)
     {
+        $debug = true;
+
         $finalCommand = $this->command;
 
         if ($this->location)
         {
             $finalCommand = "cd ".$this->location." && ".$this->command;
+        }
+
+        if ($debug)
+        {
+            echo "Executing command: $finalCommand\n";
+            error_log("Executing command: $finalCommand");
         }
 
         $returnValue = $ssh->exec($finalCommand);
