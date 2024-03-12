@@ -230,6 +230,26 @@ class ScriptCommand
     {
         $debug = true;
 
+        $startedQuiet = $ssh->isQuietModeEnabled();
+
+        if ($startedQuiet)
+        {
+            if ($debug)
+            {
+                echo "Quiet mode is enabled. Disabling...\n";
+                error_log("Quiet mode is enabled. Disabling...");
+            }
+            $ssh->disableQuietMode();
+        }
+        else
+        {
+            if ($debug)
+            {
+                echo "Quiet mode is disabled.\n";
+                error_log("Quiet mode is disabled.");
+            }
+        }
+
         $finalCommand = $this->command;
 
         if ($this->location)
@@ -252,6 +272,11 @@ class ScriptCommand
         }
 
         $errorMessage = $this->hasError($ssh, $returnValue);
+
+        if ($startedQuiet)
+        {
+            $ssh->enableQuietMode();
+        }
     
         if ($errorMessage)
         {
