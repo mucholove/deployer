@@ -8,8 +8,10 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Mucholove\\Deployer\\": "src/"
-        }
+        },
+        "classmap": [
+            "src/"
+        ]
     },
     "authors": [
         {
