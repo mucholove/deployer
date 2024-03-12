@@ -118,7 +118,7 @@ switch ($serverAuthenticationMethod)
             echo "Using public key\n";
         }
         $keyBinary = file_get_contents($SERVER_CONFIG["SSHCertificateFile"]);
-        $key       = \SSH2\PublicKeyLoader::load($keyBinary);
+        $key       = \phpseclib3\Crypt\PublicKeyLoader::load($keyBinary);
 
         $ssh->login($SERVER_CONFIG['username'], 
                     $key);
@@ -130,7 +130,7 @@ switch ($serverAuthenticationMethod)
         }
         $password  = $SERVER_CONFIG['password'];
         $keyBinary = file_get_contents($SERVER_CONFIG["SSHCertificateFile"], $password);
-        $key       = \SSH2\PublicKeyLoader::load($keyBinary);
+        $key       = \phpseclib3\Crypt\PublicKeyLoader::load($keyBinary);
 
         $ssh->login($SERVER_CONFIG['username'], 
                     $key);
