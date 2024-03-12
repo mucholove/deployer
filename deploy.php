@@ -8,6 +8,8 @@ echo $autoloadFile."\n";
 
 require $autoloadFile;
 
+use SSH2;
+
 if ($argc < 2) 
 {
     die("Usage: php script.php <server_name>\n");
@@ -98,7 +100,7 @@ $host                      = $SERVER_CONFIG["host"];
 $port                      = $SERVER_CONFIG["port"];
 $username                  = $SERVER_CONFIG["username"];
 
-$ssh = new SSH2($host, $port ?? 22);
+$ssh = new phpseclib3\Net\SSH2($host, $port ?? 22);
 
 switch ($serverAuthenticationMethod) 
 {
