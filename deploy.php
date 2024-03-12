@@ -80,7 +80,7 @@ enum SSHAuthMethod: string
 $serverAuthenticationMethod = SSHAuthMethod::None; 
     
 // https://phpseclib.com/docs/auth
-if (isset($SEVER_CONFIG["SSHPrivateKeyFile"]))
+if (isset($SERVER_CONFIG["SSHPrivateKeyFile"]))
 {
     $serverAuthenticationMethod = SSHAuthMethod::PublicKey;
     
