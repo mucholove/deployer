@@ -8,7 +8,6 @@ echo $autoloadFile."\n";
 
 require $autoloadFile;
 
-use SSH2;
 
 if ($argc < 2) 
 {
@@ -105,20 +104,32 @@ $ssh = new phpseclib3\Net\SSH2($host, $port ?? 22);
 switch ($serverAuthenticationMethod) 
 {
     case SSHAuthMethod::Password:
+        if ($debug)
+        {
+            echo "Using password\n";
+        }
         $ssh->login($SERVER_CONFIG['username'], 
                     $SERVER_CONFIG['password']);
         break;
     case SSHAuthMethod::PublicKey:
+        if ($debug)
+        {
+            echo "Using public key\n";
+        }
         $keyBinary = file_get_contents($SERVER_CONFIG["SSHCertificateFile"]);
-        $key       = PublicKeyLoader::load($keyBinary);
+        $key       = \SSH2\PublicKeyLoader::load($keyBinary);
 
         $ssh->login($SERVER_CONFIG['username'], 
                     $key);
         break;
     case SSHAuthMethod::PasswordProtectedPublicKey:
+        if ($debug)
+        {
+            echo "Using password protected public key\n";
+        }
         $password  = $SERVER_CONFIG['password'];
         $keyBinary = file_get_contents($SERVER_CONFIG["SSHCertificateFile"], $password);
-        $key       = PublicKeyLoader::load($keyBinary);
+        $key       = \SSH2\PublicKeyLoader::load($keyBinary);
 
         $ssh->login($SERVER_CONFIG['username'], 
                     $key);
