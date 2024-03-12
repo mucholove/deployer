@@ -105,8 +105,9 @@ $ssh = ssh2_connect($host, $port ?? 22);
 switch ($serverAuthenticationMethod) 
 {
     case SSHAuthMethod::Password:
-        $ssh->login($SERVER_CONFIG['username'], 
-                    $SERVER_CONFIG['password']);
+        ssh2_auth_password($ssh,
+            $SERVER_CONFIG['username'], 
+            $SERVER_CONFIG['password']);
         break;
     case SSHAuthMethod::PublicKey:
         $keyBinary = file_get_contents($SERVER_CONFIG["certificateKeyFile"]);
@@ -120,7 +121,9 @@ switch ($serverAuthenticationMethod)
         $keyBinary = file_get_contents($SERVER_CONFIG["certificateKeyFile"], $password);
         $key       = PublicKeyLoader::load($keyBinary);
 
-        $ssh->login($SERVER_CONFIG['username'], 
+        $ssh->ssh2_auth_pubkey_file(
+            $ssh,
+            $SERVER_CONFIG['username'], 
                     $key);
         break;
     case SSHAuthMethod::KeyboardInteractive:

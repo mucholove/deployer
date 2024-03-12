@@ -112,7 +112,7 @@ switch ($serverAuthenticationMethod)
                     $SERVER_CONFIG['password']);
         break;
     case SSHAuthMethod::PublicKey:
-        $keyBinary = file_get_contents($SERVER_CONFIG["certificateKeyFile"]);
+        $keyBinary = file_get_contents($SERVER_CONFIG["SSHCertificateFile"]);
         $key       = PublicKeyLoader::load($keyBinary);
 
         $ssh->login($SERVER_CONFIG['username'], 
@@ -120,7 +120,7 @@ switch ($serverAuthenticationMethod)
         break;
     case SSHAuthMethod::PasswordProtectedPublicKey:
         $password  = $SERVER_CONFIG['password'];
-        $keyBinary = file_get_contents($SERVER_CONFIG["certificateKeyFile"], $password);
+        $keyBinary = file_get_contents($SERVER_CONFIG["SSHCertificateFile"], $password);
         $key       = PublicKeyLoader::load($keyBinary);
 
         $ssh->login($SERVER_CONFIG['username'], 
