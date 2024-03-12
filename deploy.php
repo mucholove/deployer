@@ -148,7 +148,7 @@ switch ($serverAuthenticationMethod)
                 - XML Signature keys.
         */
 
-        $key = \phpseclib3\Crypt\PublicKeyLoader::load($keyBinary, $password);
+        $key = \phpseclib3\Crypt\PublicKeyLoader::loadPrivateKey($keyBinary, $password);
     
         $ssh->login($SERVER_CONFIG['username'], $key);
         break;
