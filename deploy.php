@@ -245,6 +245,12 @@ class ScriptCommand
 
         $returnValue = $ssh->exec($finalCommand);
 
+        if ($debug)
+        {
+            echo "Output: $returnValue\n";
+            error_log("Output: $returnValue");
+        }
+
         $errorMessage = $this->hasError($ssh, $returnValue);
     
         if ($errorMessage)
