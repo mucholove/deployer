@@ -194,9 +194,17 @@ class ScriptCommand
 
     function hasError($ssh, $output)
     {
+        $debug = true;
+
         $exitStatus = $ssh->getExitStatus();
 
-        if ($exitStatus !== 0)
+        if ($debug)
+        {
+            echo "Exit status: $exitStatus\n";
+            error_log("Exit status: $exitStatus\n");
+        }
+
+        if ($exitStatus)
         {
             $stdErr = $ssh->getStdError();
             return "Error executing command: $this->command. Exit status: $exitStatus. Output: $output. Std-Err: $stdErr \n";
