@@ -13,7 +13,7 @@ use phpseclib3\Net\SSH2;
 use function Deployer\error;
 use function PHPSTORM_META\map;
 
-\phpseclib3\SSH2::setDebugMode(true);
+SSH2::setDebugMode(true);
 
 if ($argc < 2) 
 {
