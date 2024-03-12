@@ -110,21 +110,18 @@ switch ($serverAuthenticationMethod)
             $SERVER_CONFIG['password']);
         break;
     case SSHAuthMethod::PublicKey:
-        $keyBinary = file_get_contents($SERVER_CONFIG["certificateKeyFile"]);
-        $key       = PublicKeyLoader::load($keyBinary);
-
-        $ssh->login($SERVER_CONFIG['username'], 
-                    $key);
+        ssh2_auth_pubkey_file($ssh,
+            $SERVER_CONFIG['username'], 
+            $SERVER_CONFIG['SSHPublicKeyFile'],
+            $SERVER_CONFIG['SSHPrivateKeyFile']);
         break;
     case SSHAuthMethod::PasswordProtectedPublicKey:
-        $password  = $SERVER_CONFIG['password'];
-        $keyBinary = file_get_contents($SERVER_CONFIG["certificateKeyFile"], $password);
-        $key       = PublicKeyLoader::load($keyBinary);
-
-        $ssh->ssh2_auth_pubkey_file(
-            $ssh,
+        ssh2_auth_pubkey_file($ssh,
             $SERVER_CONFIG['username'], 
-                    $key);
+            $SERVER_CONFIG['SSHPublicKeyFile'],
+            $SERVER_CONFIG['SSHPrivateKeyFile'],
+            $password);
+        break;
         break;
     case SSHAuthMethod::KeyboardInteractive:
         throw new Exception("TODO - Keyboard Interactive");
