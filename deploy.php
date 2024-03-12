@@ -131,6 +131,23 @@ switch ($serverAuthenticationMethod)
         }
         $password  = $SERVER_CONFIG['password'];
         $keyBinary = file_get_contents($filePath);
+
+        if ($debug)
+        {
+            echo "Key binary: ".$keyBinary."\n";
+        }
+
+        /*
+            phpseclib
+                ...takes in strings---not file paths.
+                ...doesn't require a public key. Private keys have the public key 
+                embedded within them so phpseclib just extracts it.
+                ...can take in pretty much any standardized format, from 
+                - PKCS#1 formatted keys,
+                - PuTTY keys, 
+                - XML Signature keys.
+        */
+
         $key = \phpseclib3\Crypt\PublicKeyLoader::load($keyBinary, $password);
     
         $ssh->login($SERVER_CONFIG['username'], $key);
