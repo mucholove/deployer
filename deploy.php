@@ -117,19 +117,21 @@ switch ($serverAuthenticationMethod)
         {
             echo "Using public key\n";
         }
-        $keyBinary = file_get_contents($SERVER_CONFIG["SSHCertificateFile"]);
+        $keyBinary = file_get_contents($SERVER_CONFIG["SSHPrivateKeyFile"]);
         $key       = \phpseclib3\Crypt\PublicKeyLoader::load($keyBinary);
 
         $ssh->login($SERVER_CONFIG['username'], 
                     $key);
         break;
     case SSHAuthMethod::PasswordProtectedPublicKey:
+        $filePath = $SERVER_CONFIG["SSHPrivateKeyFile"];
         if ($debug)
         {
             echo "Using password protected public key\n";
+            echo "Key file path: $filePath\n";
         }
         $password  = $SERVER_CONFIG['password'];
-        $keyBinary = file_get_contents($SERVER_CONFIG["SSHCertificateFile"], $password);
+        $keyBinary = file_get_contents($filePath, $password);
         $key       = \phpseclib3\Crypt\PublicKeyLoader::load($keyBinary);
 
         $ssh->login($SERVER_CONFIG['username'], 
