@@ -41,8 +41,13 @@ $key = RSA::createKey();
 $privateKey = $key->toString('PKCS1');
 file_put_contents($privateKeyFile, $privateKey);
 
+$multiLineFormat = 'PKCS1';
+
+$singleLineFormat = 'PKCS8';
+$singleLineFormat = 'OpenSSH';
+
 // Export the public key
-$publicKey = $key->getPublicKey()->toString('PKCS1');
+$publicKey = $key->getPublicKey()->toString('OpenSSH');
 file_put_contents($publicKeyFile, $publicKey);
 
 echo "SSH key pair generated and saved.\n";
