@@ -150,7 +150,7 @@ switch ($serverAuthenticationMethod)
 
         if ($debug)
         {
-            echo "Using load private key";
+            echo "Using load private key\n";
         }
 
         $key = \phpseclib3\Crypt\PublicKeyLoader::loadPrivateKey($keyBinary, $password);
