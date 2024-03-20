@@ -96,9 +96,9 @@ else if (isset($SERVER_CONFIG["password"]))
 
 echo "Will attempt connection...\n";
 
-$host                      = $SERVER_CONFIG["host"];
-$port                      = $SERVER_CONFIG["port"];
-$username                  = $SERVER_CONFIG["username"];
+$host     = $SERVER_CONFIG["host"];
+$port     = $SERVER_CONFIG["port"];
+$username = $SERVER_CONFIG["username"];
 
 $ssh = new phpseclib3\Net\SSH2($host, $port ?? 22);
 
@@ -239,14 +239,18 @@ $restartCommand = null;
 
 $serverOS = $SERVER_CONFIG["SERVER_OS"] ?? "windows";
 
+$mkdirCommand = null;
+
 switch ($serverOS)
 {
     case "windows":
-        $xamppExePath = 'C:\xampp\xampp-control.exe';
+        $xamppExePath   = 'C:\xampp\xampp-control.exe';
         $restartCommand = new ScriptCommand('cd "'.$xamppExePath.'" /restart');
+        $mkdirCommand   = new ScriptCommand("mkdir ".escapeshellarg($newFolderPath));
         break;
     case "linux":
         $restartCommand = new ScriptCommand('systemctl restart apache2');
+        $mkdirCommand   = new ScriptCommand("mkdir -p ".escapeshellarg($newFolderPath));
         break;
 }
 
@@ -287,7 +291,7 @@ $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
 };
 
 $commands = [
-    new ScriptCommand("mkdir -p ".escapeshellarg($newFolderPath)),
+    $mkdirCommand
     $gitCommand,
     "copy \"$composerAuthJSONPath\" \"$newFolderPath\"",  
     $composerInstallCommand,
