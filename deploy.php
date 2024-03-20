@@ -244,8 +244,9 @@ $mkdirCommand = null;
 switch ($serverOS)
 {
     case "windows":
-        $xamppExePath   = 'C:\xampp\xampp-control.exe';
-        $restartCommand = new ScriptCommand('"'.$xamppExePath.'" /restart');
+        // $xamppExePath   = 'C:\xampp\xampp-control.exe';
+        // $restartCommand = new ScriptCommand('"'.$xamppExePath.'" /restart');
+        $restartCommand = new ScriptCommand('C:\xampp\apache\bin\httpd.exe -k restart');
         $mkdirCommand   = new ScriptCommand("mkdir ".escapeshellarg($newFolderPath));
         break;
     case "linux":
