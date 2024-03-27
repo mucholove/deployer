@@ -17,7 +17,7 @@ class ScriptCommand
 
     function hasError($ssh, $output)
     {
-        $debug = true;
+        $debug = false;
 
         $exitStatus = $ssh->getExitStatus();
 
@@ -50,7 +50,7 @@ class ScriptCommand
 
     public function executeOrDieOnSSH($ssh, $closure = null)
     {
-        $debug = true;
+        $debug = false;
 
         $startedQuiet = $ssh->isQuietModeEnabled();
 

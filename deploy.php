@@ -320,3 +320,4 @@ foreach ($commands as $command)
 }
 
 echo "Deployment script executed.\n";
+echo "cd ".$newFolderPath."\n";
