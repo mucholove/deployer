@@ -300,7 +300,7 @@ $seedCommand = new ScriptCommand('php "'.$newFolderPath.'/seed/seed.php"');
 $commands = [
     $mkdirCommand,
     "copy \"$composerAuthJSONPath\" \"$newFolderPath\"",  
-    "mkdir \"$newFolderPath/.secret/ && copy \"$ENV_FILE_PATH\" \"$newFolderPath/.secret/env.php\"",
+    "mkdir \"$newFolderPath/.secret/\" && copy \"$ENV_FILE_PATH\" \"$newFolderPath/.secret/env.php\"",
     $gitCommand,
     $composerInstallCommand,
     $generateConfCommand,
