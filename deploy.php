@@ -291,6 +291,9 @@ $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
     }
 };
 
+
+$seedCommand = new ScriptCommand('php "'.$newFolderPath.'/seed/seed.php"');
+
 $commands = [
     $mkdirCommand,
     $gitCommand,
@@ -298,6 +301,7 @@ $commands = [
     $composerInstallCommand,
     $generateConfCommand,
     $restartCommand,
+    $seedCommand,
 ];
 
 
