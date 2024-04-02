@@ -299,8 +299,9 @@ $seedCommand = new ScriptCommand('php "'.$newFolderPath.'/seed/seed.php"');
 
 $commands = [
     $mkdirCommand,
-    "copy \"$composerAuthJSONPath\" \"$newFolderPath\"",  
     $gitCommand,
+    // Need to be executed after because git needs an empty directory
+    "copy \"$composerAuthJSONPath\" \"$newFolderPath\"",  
     'mkdir "'.$newFolderPath.'\\.secret" && copy "'.$ENV_FILE_PATH.'" "'.$newFolderPath.'\\.secret\\env.php"',
     $composerInstallCommand,
     $generateConfCommand,
