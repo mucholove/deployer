@@ -194,6 +194,7 @@ checkIfKeysExistOrDie([
     "gitHubRepo",
     "repoToServerPathBase",
     "composerAuthJSONPath",
+    "ENV_FILE_PATH",
 ], $SERVER_CONFIG);
 
 
@@ -207,6 +208,8 @@ $certificateKeyFile        = $SERVER_CONFIG["certificateKeyFile"];
 $repo                      = $SERVER_CONFIG["gitHubRepo"];
 $repoToServerPathBase      = $SERVER_CONFIG["repoToServerPathBase"];
 $composerAuthJSONPath      = $SERVER_CONFIG["composerAuthJSONPath"];
+$composerAuthJSONPath      = $SERVER_CONFIG["composerAuthJSONPath"];
+$ENV_FILE_PATH             = $SERVER_CONFIG["ENV_FILE_PATH"];
 
 // $timezone = date_default_timezone_get();
 $timezone = "America/Santo_Domingo";
@@ -296,8 +299,9 @@ $seedCommand = new ScriptCommand('php "'.$newFolderPath.'/seed/seed.php"');
 
 $commands = [
     $mkdirCommand,
-    $gitCommand,
     "copy \"$composerAuthJSONPath\" \"$newFolderPath\"",  
+    "copy \"$ENV_FILE_PATH\" \"$newFolderPath/.secret/env.php\"",
+    $gitCommand,
     $composerInstallCommand,
     $generateConfCommand,
     $restartCommand,
