@@ -303,7 +303,8 @@ $symLinkCommand = null;
 
 if (isset($SERVER_CONFIG["canonicalPath"]))
 {
-    $symLinkCommand = new ScriptCommand('mklink /D "'.$SERVER_CONFIG["canonicalPath"].'" "'.$newFolderPath.'"');
+    
+    $symLinkCommand = new ScriptCommand('if exist "'.$SERVER_CONFIG["canonicalPath"].'" rmdir /s /q "'.$SERVER_CONFIG["canonicalPath"].' mklink /D "'.$SERVER_CONFIG["canonicalPath"].'" "'.$newFolderPath.'"');
 }
 
 $commands = [
