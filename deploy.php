@@ -271,9 +271,10 @@ $generateConfString .= ' "'.$serverName.'"';
 $generateConfString .= ' "'.$certificateFile.'"';    
 $generateConfString .= ' "'.$certificateKeyFile.'"';
 
-
 $generateConfCommand = new ScriptCommand($generateConfString);
 $generateConfCommand->onErrorClosure = $removeRepoDirectoryClosure;
+
+$copyConfToNewFolderPathEnv = new ScriptCommand('copy "'.$apacheConfigFilePath.'" "'.$newFolderPath.'\\.secret\\apache_server.conf"');
 
 $composerInstallCommand = new ScriptCommand("cd \"$newFolderPath\" && composer install");
 $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
@@ -297,6 +298,14 @@ $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
 
 $seedCommand = new ScriptCommand('php "'.$newFolderPath.'/seed/seed.php"');
 
+
+$symLinkCommand = null;
+
+if (isset($SERVER_CONFIG["canonicalPath"]))
+{
+    $symLinkCommand = new ScriptCommand('mklink /D "'.$SERVER_CONFIG["canonicalPath"].'" "'.$newFolderPath.'"');
+}
+
 $commands = [
     $mkdirCommand,
     $gitCommand,
@@ -305,8 +314,10 @@ $commands = [
     'mkdir "'.$newFolderPath.'\\.secret" && copy "'.$ENV_FILE_PATH.'" "'.$newFolderPath.'\\.secret\\env.php"',
     $composerInstallCommand,
     $generateConfCommand,
-    $restartCommand,
+    $copyConfToNewFolderPathEnv,
+    $symLinkCommand,
     $seedCommand,
+    $restartCommand,
 ];
 
 
@@ -325,7 +336,11 @@ foreach ($commands as $command)
     {
         $toExecute = $command;
     }
-    $toExecute->executeOrDieOnSSH($ssh);
+
+    if ($toExecute)
+    {
+        $toExecute->executeOrDieOnSSH($ssh);
+    }
 }
 
 echo "Deployment script executed.\n";
