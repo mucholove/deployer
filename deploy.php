@@ -274,7 +274,7 @@ switch ($serverOS)
         $copyCommand          = "copy";
         break;
     case "linux":
-        $restartCommand = new ScriptCommand('systemctl restart apache2');
+        $restartCommand = new ScriptCommand('sudo systemctl restart apache2');
         $makeDirectoryCommand = "mkdir -p";
         $copyCommand          = "cp";
         break;
@@ -395,7 +395,7 @@ $commands = [
     $makeNewFolderPath,
     $gitCommand,
     // Need to be executed after because git needs an empty directory
-    // $copyAuthJsonCommand,
+
     $copyCommand.' "'.$COMPOSER_AUTH_JSON_PATH.'" "'.$newFolderPath.'"',  
     $makeDirectoryCommand.' "'.$newFolderPath.'/.secret" && '.$copyCommand.' "'.$ENV_FILE_PATH.'" "'.$newFolderPath.'/.secret/env.php"',
     $composerInstallCommand,
