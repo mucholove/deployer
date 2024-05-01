@@ -239,7 +239,7 @@ $documentRoot = $newFolderPath.'\www';
 $serverOS = $SERVER_CONFIG["SERVER_OS"] ?? "windows";
 
 $restartCommand             = null;
-$mkdirCommand               = null;
+$makeNewFolderPath               = null;
 $copyConfToNewFolderPathEnv = null;
 $copyCommand                = null;
 
@@ -249,17 +249,19 @@ switch ($serverOS)
         // $xamppExePath   = 'C:\xampp\xampp-control.exe';
         // $restartCommand = new ScriptCommand('"'.$xamppExePath.'" /restart');
         $restartCommand = new ScriptCommand('C:\xampp\apache\bin\httpd.exe -k restart');
-        $mkdirCommand   = new ScriptCommand("mkdir ".escapeshellarg($newFolderPath));
-        $copyConfToNewFolderPathEnv = new ScriptCommand('copy "'.$apacheConfigFilePath.'" "'.$newFolderPath.'\\.secret\\apache_server.conf"');
-        $copyCommand = "copy";
+        $makeDirectoryCommand = "mkdir";
+        $copyCommand          = "copy";
         break;
     case "linux":
         $restartCommand = new ScriptCommand('systemctl restart apache2');
-        $mkdirCommand   = new ScriptCommand("mkdir -p ".escapeshellarg($newFolderPath));
-        $copyConfToNewFolderPathEnv = new ScriptCommand('cp "'.$apacheConfigFilePath.'" "'.$newFolderPath.'\\.secret\\apache_server.conf"');
-        $copyCommand = "cp";
+        $makeDirectoryCommand = "mkdir -p";
+        $copyCommand          = "cp";
         break;
 }
+
+$makeNewFolderPath          = new ScriptCommand($makeDirectoryCommand." ".escapeshellarg($newFolderPath));
+$copyConfToNewFolderPathEnv = new ScriptCommand($copyCommand.' "'.$apacheConfigFilePath.'" "'.$newFolderPath.'\\.secret\\apache_server.conf"');
+
 
 $vendorName  = "mucholove";
 $libraryName = "deployer";
@@ -332,7 +334,7 @@ function getOrCreateDirectoryCommand($directoryPath, $serverOS = "windows")
 
 $commands = [
     new ScriptCommand(getOrCreateDirectoryCommand($REPOS_PATH, $serverOS)),
-    $mkdirCommand,
+    $makeNewFolderPath,
     $gitCommand,
     // Need to be executed after because git needs an empty directory
     // $copyAuthJsonCommand,
