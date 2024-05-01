@@ -291,10 +291,19 @@ ps aux | grep httpd
 $confToSiteFolder = '/etc/apache2/sites-automanaged';
 mkdir $confToSiteFolder # feel free to name it what we want...
 vim /etc/apache2/apache2.conf        # add `IncludeOptional /etc/apache2/sites-automanaged/*.conf`
-sudo chown -R root:www-data $confToSiteFolder
-sudo chmod -R 755 $confToSiteFolder
-sudo apache2ctl configtest
-sudo systemctl restart apache2
+chown -R root:www-data $confToSiteFolder
+... - 
+... - chown -R root:www-data /gtk-conf-managed-sites/
+chmod -R 775 $confToSiteFolder
+apache2ctl configtest
+systemctl restart apache2
+
+
+Permissions for 775 (OGO)
+
+7 for the owner: The owner has read (4), write (2), and execute (1) permissions. Sum = 7.
+7 for the group: Members of the group have read (4), write (2), and execute (1) permissions. Sum = 7.
+5 for others: Everyone else has read (4) and execute (1) permissions, but no write permission. Sum = 5.
 
 */
 $copyConfToNewFolderPathEnv = new ScriptCommand($copyCommand.' "'.$apacheConfigFilePath.'" "'.$newFolderPath.'/.secret/apache_server.conf"');
@@ -339,23 +348,6 @@ $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
 
 $seedCommand = new ScriptCommand('php "'.$newFolderPath.'/seed/seed.php"');
 
-
-$symLinkCommand = null;
-
-if (isset($SERVER_CONFIG["canonicalPath"]))
-{
-    switch ($serverOS)
-    {
-        case "windows":
-            $symLinkCommand = new ScriptCommand('if exist "'.$SERVER_CONFIG["canonicalPath"].'" rmdir /s /q "'.$SERVER_CONFIG["canonicalPath"].'" &&  mklink /D "'.$SERVER_CONFIG["canonicalPath"].'" "'.$newFolderPath.'"');
-            break;
-        case "linux":
-            $symLinkCommand = new ScriptCommand('ln -s "'.$newFolderPath.'" "'.$SERVER_CONFIG["canonicalPath"].'"');
-            break;
-    }    
-}
-
-
 function getOrCreateDirectoryCommand($directoryPath, $serverOS = "windows")
 {
     $makeDirectoryCommand = null;
@@ -377,6 +369,27 @@ function getOrCreateDirectoryCommand($directoryPath, $serverOS = "windows")
     return $command;
 }
 
+$makeCanonicalPathCommand = null;
+$symLinkCommand = null;
+
+if (isset($SERVER_CONFIG["canonicalPath"]))
+{
+    
+    $makeCanonicalPathCommand = new ScriptCommand(getOrCreateDirectoryCommand($SERVER_CONFIG["canonicalPath"], $serverOS));
+
+    switch ($serverOS)
+    {
+        case "windows":
+            $symLinkCommand = new ScriptCommand('if exist "'.$SERVER_CONFIG["canonicalPath"].'" rmdir /s /q "'.$SERVER_CONFIG["canonicalPath"].'" &&  mklink /D "'.$SERVER_CONFIG["canonicalPath"].'" "'.$newFolderPath.'"');
+            break;
+        case "linux":
+            $symLinkCommand = new ScriptCommand('ln -s "'.$newFolderPath.'" "'.$SERVER_CONFIG["canonicalPath"].'"');
+            break;
+    }    
+}
+
+
+
 $commands = [
     new ScriptCommand(getOrCreateDirectoryCommand($REPOS_PATH, $serverOS)),
     $makeNewFolderPath,
@@ -388,6 +401,7 @@ $commands = [
     $composerInstallCommand,
     $generateConfCommand,
     $copyConfToNewFolderPathEnv,
+    $makeCanonicalPathCommand,
     $symLinkCommand,
     $seedCommand,
     $restartCommand,
