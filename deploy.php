@@ -323,7 +323,9 @@ function getOrCreateDirectoryCommand($directoryPath, $serverOS = "windows")
             break;
     }
 
-    $command = "[ -d '".$directoryPath."' ] &&  '".$directoryPath." exists!' || $makeDirectoryCommand '".$directoryPath."' && '".$directoryPath." created.'";
+    // $command = "[ -d '".$directoryPath."' ] &&  '".$directoryPath." exists!' || $makeDirectoryCommand '".$directoryPath."' && '".$directoryPath." created.'";
+
+    $command = $makeDirectoryCommand.' '.$directoryPath;
 
     return $command;
 }
