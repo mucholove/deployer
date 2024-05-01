@@ -338,8 +338,8 @@ $commands = [
     $gitCommand,
     // Need to be executed after because git needs an empty directory
     // $copyAuthJsonCommand,
-    $copyCommand." \"$COMPOSER_AUTH_JSON_PATH\" \"$newFolderPath\"",  
-    $makeDirectoryCommand.' "'.$newFolderPath.'\\.secret" && '.$copyCommand.' "'.$ENV_FILE_PATH.'" "'.$newFolderPath.'\\.secret\\env.php"',
+    $copyCommand.' "'.$COMPOSER_AUTH_JSON_PATH.'" "'.$newFolderPath.'"',  
+    $makeDirectoryCommand.' "'.$newFolderPath.'/.secret" && '.$copyCommand.' "'.$ENV_FILE_PATH.'" "'.$newFolderPath.'\\.secret\\env.php"',
     $composerInstallCommand,
     $generateConfCommand,
     $copyConfToNewFolderPathEnv,
