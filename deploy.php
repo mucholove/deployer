@@ -274,7 +274,13 @@ switch ($serverOS)
         $copyCommand          = "copy";
         break;
     case "linux":
+        // sudo setcap 'cap_sys_admin=+ep' /home/palo_deployer/PALO_HOME/Scripts/restart_apache.sh
+        // EDITOR=vim visudo
+        // -- %www-data ALL=(ALL) NOPASSWD: /usr/local/bin/restart_apache.sh
+        // -- %www-data ALL=(ALL) NOPASSWD: /home/palo_deployer/PALO_HOME/Scripts/restart_apache.sh
+
         $restartCommand = new ScriptCommand('sudo systemctl restart apache2');
+        // $restartCommand = new ScriptCommand('sudo systemctl restart apache2');
         $makeDirectoryCommand = "mkdir -p";
         $copyCommand          = "cp";
         break;
@@ -356,15 +362,16 @@ function getOrCreateDirectoryCommand($directoryPath, $serverOS = "windows")
     {
         case "windows":
             $makeDirectoryCommand = "mkdir";
+            $command = "if not exist ".$directoryPath." ".$makeDirectoryCommand.' '.$directoryPath;
             break;
         case "linux":
             $makeDirectoryCommand = "mkdir -p";
+            $command = $makeDirectoryCommand.' '.$directoryPath;
             break;
     }
 
     // $command = "[ -d '".$directoryPath."' ] &&  '".$directoryPath." exists!' || $makeDirectoryCommand '".$directoryPath."' && '".$directoryPath." created.'";
 
-    $command = $makeDirectoryCommand.' '.$directoryPath;
 
     return $command;
 }
