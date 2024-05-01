@@ -9,6 +9,27 @@ echo $autoloadFile."\n";
 
 require $autoloadFile;
 
+/*
+
+sudo usermod -aG www-data deployer       # Adds 'deployer'      to the 'www-data' group
+sudo usermod -aG www-data palo_deployer  # Adds 'palo_deployer' to the 'www-data' group
+
+Consider Using ACLs for More Granular Control
+=============================================
+If you need more granular control over permissions, 
+consider using Access Control Lists (ACLs).
+
+ACLs allow you to specify more detailed permissions than the basic owner/group/other model. 
+
+Here’s how to set an ACL:
+
+sudo apt-get install acl  # On Debian/Ubuntu systems ---- sudo yum install acl # On CentOS/RedHat systems
+setfacl -m u:deployer:rwx /path/to/directory
+getfacl /path/to/directory
+
+
+*/
+
 
 if ($argc < 2) 
 {
@@ -260,6 +281,22 @@ switch ($serverOS)
 }
 
 $makeNewFolderPath          = new ScriptCommand($makeDirectoryCommand." ".escapeshellarg($newFolderPath));
+
+/*
+
+...to get Apache User...do:
+ps aux | grep apache
+ps aux | grep httpd
+
+$confToSiteFolder = '/etc/apache2/sites-automanaged';
+mkdir $confToSiteFolder # feel free to name it what we want...
+vim /etc/apache2/apache2.conf        # add `IncludeOptional /etc/apache2/sites-automanaged/*.conf`
+sudo chown -R root:www-data $confToSiteFolder
+sudo chmod -R 755 $confToSiteFolder
+sudo apache2ctl configtest
+sudo systemctl restart apache2
+
+*/
 $copyConfToNewFolderPathEnv = new ScriptCommand($copyCommand.' "'.$apacheConfigFilePath.'" "'.$newFolderPath.'/.secret/apache_server.conf"');
 
 
