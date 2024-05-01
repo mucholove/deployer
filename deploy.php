@@ -227,14 +227,14 @@ $removeRepoDirectoryClosure = function() use ($ssh, $newFolderPath) {
 };
 
 
-$cloneCommand = "cd \"$newFolderPath\" && git clone https://$githubPersonalAccessToken:x-oauth-basic@$repo .";
+$cloneCommand = 'cd "'.$newFolderPath.'" && git clone https://$githubPersonalAccessToken:x-oauth-basic@$repo .';
 // Execute the command with $ssh->exec()
 
 $gitCommand = new ScriptCommand($cloneCommand);
 $gitCommand->onErrorClosure = $removeRepoDirectoryClosure;
 $gitCommand->errorHandler = function ($scriptCommand, $output){};
 
-$documentRoot = $newFolderPath.'\www';
+$documentRoot = $newFolderPath.'/www';
 
 $serverOS = $SERVER_CONFIG["SERVER_OS"] ?? "windows";
 
@@ -260,7 +260,7 @@ switch ($serverOS)
 }
 
 $makeNewFolderPath          = new ScriptCommand($makeDirectoryCommand." ".escapeshellarg($newFolderPath));
-$copyConfToNewFolderPathEnv = new ScriptCommand($copyCommand.' "'.$apacheConfigFilePath.'" "'.$newFolderPath.'\\.secret\\apache_server.conf"');
+$copyConfToNewFolderPathEnv = new ScriptCommand($copyCommand.' "'.$apacheConfigFilePath.'" "'.$newFolderPath.'/.secret/apache_server.conf"');
 
 
 $vendorName  = "mucholove";
@@ -279,7 +279,8 @@ $generateConfString .= ' "'.$certificateKeyFile.'"';
 $generateConfCommand = new ScriptCommand($generateConfString);
 $generateConfCommand->onErrorClosure = $removeRepoDirectoryClosure;
 
-$composerInstallCommand = new ScriptCommand("cd \"$newFolderPath\" && composer install");
+$composerInstallCommand = new ScriptCommand('cd '.$newFolderPath.' && composer install');
+
 $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
     $tests = [
         strpos($output, 'error') !== false,
@@ -306,8 +307,15 @@ $symLinkCommand = null;
 
 if (isset($SERVER_CONFIG["canonicalPath"]))
 {
-    
-    $symLinkCommand = new ScriptCommand('if exist "'.$SERVER_CONFIG["canonicalPath"].'" rmdir /s /q "'.$SERVER_CONFIG["canonicalPath"].'" &&  mklink /D "'.$SERVER_CONFIG["canonicalPath"].'" "'.$newFolderPath.'"');
+    switch ($serverOS)
+    {
+        case "windows":
+            $symLinkCommand = new ScriptCommand('if exist "'.$SERVER_CONFIG["canonicalPath"].'" rmdir /s /q "'.$SERVER_CONFIG["canonicalPath"].'" &&  mklink /D "'.$SERVER_CONFIG["canonicalPath"].'" "'.$newFolderPath.'"');
+            break;
+        case "linux":
+            $symLinkCommand = new ScriptCommand('ln -s "'.$newFolderPath.'" "'.$SERVER_CONFIG["canonicalPath"].'"');
+            break;
+    }    
 }
 
 
@@ -339,7 +347,7 @@ $commands = [
     // Need to be executed after because git needs an empty directory
     // $copyAuthJsonCommand,
     $copyCommand.' "'.$COMPOSER_AUTH_JSON_PATH.'" "'.$newFolderPath.'"',  
-    $makeDirectoryCommand.' "'.$newFolderPath.'/.secret" && '.$copyCommand.' "'.$ENV_FILE_PATH.'" "'.$newFolderPath.'\\.secret\\env.php"',
+    $makeDirectoryCommand.' "'.$newFolderPath.'/.secret" && '.$copyCommand.' "'.$ENV_FILE_PATH.'" "'.$newFolderPath.'/.secret/env.php"',
     $composerInstallCommand,
     $generateConfCommand,
     $copyConfToNewFolderPathEnv,
