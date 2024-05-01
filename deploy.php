@@ -309,9 +309,23 @@ if (isset($SERVER_CONFIG["canonicalPath"]))
 }
 
 
-function getOrCreateDirectoryCommand($directoryPath)
+function getOrCreateDirectoryCommand($directoryPath, $serverOS = "windows")
 {
-    return "[ -d '".$directoryPath."' ] &&  '".$directoryPath." exists!' || mkdir -p '".$directoryPath."' && '".$directoryPath." created.'";
+    $makeDirectoryCommand = null;
+
+    switch ($serverOS)
+    {
+        case "windows":
+            $makeDirectoryCommand = "mkdir";
+            break;
+        case "linux":
+            $makeDirectoryCommand = "mkdir -p";
+            break;
+    }
+
+    $command = "[ -d '".$directoryPath."' ] &&  '".$directoryPath." exists!' || $makeDirectoryCommand '".$directoryPath."' && '".$directoryPath." created.'";
+
+    return $command;
 }
 
 $commands = [
