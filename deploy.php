@@ -227,7 +227,7 @@ $removeRepoDirectoryClosure = function() use ($ssh, $newFolderPath) {
 };
 
 
-$cloneCommand = 'cd "'.$newFolderPath.'" && git clone https://$githubPersonalAccessToken:x-oauth-basic@$repo .';
+$cloneCommand = 'cd "'.$newFolderPath.'" && git clone https://'.$githubPersonalAccessToken.':x-oauth-basic@'.$repo ;
 // Execute the command with $ssh->exec()
 
 $gitCommand = new ScriptCommand($cloneCommand);
