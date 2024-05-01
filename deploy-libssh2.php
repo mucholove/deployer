@@ -149,8 +149,8 @@ checkIfKeysExistOrDie([
     "githubPersonalAccessToken",
     "serverName",
     "gitHubRepo",
-    "repoToServerPathBase",
-    "composerAuthJSONPath",
+    "REPOS_PATH",
+    "COMPOSER_AUTH_JSON_PATH",
 ], $SERVER_CONFIG);
 
 
@@ -159,11 +159,11 @@ $password                  = $SERVER_CONFIG["password"];
 $githubPersonalAccessToken = $SERVER_CONFIG["githubPersonalAccessToken"];
 $apacheConfigFilePath      = $SERVER_CONFIG["APACHE_CONFIG_PATH"];
 $serverName                = $SERVER_CONFIG["serverName"];
-$certificateFile           = $SERVER_CONFIG["certificateFile"];
+$certificateFile           = $SERVER_CONFIG["apacheConfig"]["certificateFile"];
 $certificateKeyFile        = $SERVER_CONFIG["certificateKeyFile"];
 $repo                      = $SERVER_CONFIG["gitHubRepo"];
-$repoToServerPathBase      = $SERVER_CONFIG["repoToServerPathBase"];
-$composerAuthJSONPath      = $SERVER_CONFIG["composerAuthJSONPath"];
+$REPOS_PATH      = $SERVER_CONFIG["REPOS_PATH"];
+$COMPOSER_AUTH_JSON_PATH      = $SERVER_CONFIG["COMPOSER_AUTH_JSON_PATH"];
 
 // $timezone = date_default_timezone_get();
 $timezone = "America/Santo_Domingo";
@@ -174,7 +174,7 @@ date_default_timezone_set($timezone);
 // Define the base path and create a new folder with the current datetime
 $dateTime = new DateTime();
 $folderName = $dateTime->format('Y-m-d_His');
-$newFolderPath = $repoToServerPathBase.$folderName;
+$newFolderPath = $REPOS_PATH.$folderName;
 
 $removeRepoDirectoryClosure = function() use ($ssh, $newFolderPath) {
     $ssh->exec('rm "'.$newFolderPath.'"');
@@ -245,7 +245,7 @@ $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
 $commands = [
     new ScriptCommand("mkdir -p ".escapeshellarg($newFolderPath)),
     $gitCommand,
-    "copy \"$composerAuthJSONPath\" \"$newFolderPath\"",  
+    "copy \"$COMPOSER_AUTH_JSON_PATH\" \"$newFolderPath\"",  
     $composerInstallCommand,
     $generateConfCommand,
     $restartCommand,

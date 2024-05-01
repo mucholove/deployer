@@ -192,8 +192,8 @@ checkIfKeysExistOrDie([
     "githubPersonalAccessToken",
     "serverName",
     "gitHubRepo",
-    "repoToServerPathBase",
-    "composerAuthJSONPath",
+    "REPOS_PATH",
+    "COMPOSER_AUTH_JSON_PATH",
     "ENV_FILE_PATH",
 ], $SERVER_CONFIG);
 
@@ -203,12 +203,11 @@ $password                  = $SERVER_CONFIG["password"];
 $githubPersonalAccessToken = $SERVER_CONFIG["githubPersonalAccessToken"];
 $apacheConfigFilePath      = $SERVER_CONFIG["APACHE_CONFIG_PATH"];
 $serverName                = $SERVER_CONFIG["serverName"];
-$certificateFile           = $SERVER_CONFIG["certificateFile"];
+$certificateFile           = $SERVER_CONFIG["apacheConfig"]["certificateFile"];
 $certificateKeyFile        = $SERVER_CONFIG["certificateKeyFile"];
 $repo                      = $SERVER_CONFIG["gitHubRepo"];
-$repoToServerPathBase      = $SERVER_CONFIG["repoToServerPathBase"];
-$composerAuthJSONPath      = $SERVER_CONFIG["composerAuthJSONPath"];
-$composerAuthJSONPath      = $SERVER_CONFIG["composerAuthJSONPath"];
+$REPOS_PATH                = $SERVER_CONFIG["REPOS_PATH"];
+$COMPOSER_AUTH_JSON_PATH   = $SERVER_CONFIG["COMPOSER_AUTH_JSON_PATH"];
 $ENV_FILE_PATH             = $SERVER_CONFIG["ENV_FILE_PATH"];
 
 // $timezone = date_default_timezone_get();
@@ -218,9 +217,9 @@ date_default_timezone_set($timezone);
 
 
 // Define the base path and create a new folder with the current datetime
-$dateTime = new DateTime();
-$folderName = $dateTime->format('Y-m-d_His');
-$newFolderPath = $repoToServerPathBase.$folderName;
+$dateTime      = new DateTime();
+$folderName    = $dateTime->format('Y-m-d_His');
+$newFolderPath = $REPOS_PATH.$folderName;
 
 
 $removeRepoDirectoryClosure = function() use ($ssh, $newFolderPath) {
@@ -235,14 +234,14 @@ $gitCommand = new ScriptCommand($cloneCommand);
 $gitCommand->onErrorClosure = $removeRepoDirectoryClosure;
 $gitCommand->errorHandler = function ($scriptCommand, $output){};
 
-
 $documentRoot = $newFolderPath.'\www';
-
-$restartCommand = null;
 
 $serverOS = $SERVER_CONFIG["SERVER_OS"] ?? "windows";
 
-$mkdirCommand = null;
+$restartCommand             = null;
+$mkdirCommand               = null;
+$copyConfToNewFolderPathEnv = null;
+$copyCommand                = null;
 
 switch ($serverOS)
 {
@@ -251,10 +250,14 @@ switch ($serverOS)
         // $restartCommand = new ScriptCommand('"'.$xamppExePath.'" /restart');
         $restartCommand = new ScriptCommand('C:\xampp\apache\bin\httpd.exe -k restart');
         $mkdirCommand   = new ScriptCommand("mkdir ".escapeshellarg($newFolderPath));
+        $copyConfToNewFolderPathEnv = new ScriptCommand('copy "'.$apacheConfigFilePath.'" "'.$newFolderPath.'\\.secret\\apache_server.conf"');
+        $copyCommand = "copy";
         break;
     case "linux":
         $restartCommand = new ScriptCommand('systemctl restart apache2');
         $mkdirCommand   = new ScriptCommand("mkdir -p ".escapeshellarg($newFolderPath));
+        $copyConfToNewFolderPathEnv = new ScriptCommand('cp "'.$apacheConfigFilePath.'" "'.$newFolderPath.'\\.secret\\apache_server.conf"');
+        $copyCommand = "cp";
         break;
 }
 
@@ -273,8 +276,6 @@ $generateConfString .= ' "'.$certificateKeyFile.'"';
 
 $generateConfCommand = new ScriptCommand($generateConfString);
 $generateConfCommand->onErrorClosure = $removeRepoDirectoryClosure;
-
-$copyConfToNewFolderPathEnv = new ScriptCommand('copy "'.$apacheConfigFilePath.'" "'.$newFolderPath.'\\.secret\\apache_server.conf"');
 
 $composerInstallCommand = new ScriptCommand("cd \"$newFolderPath\" && composer install");
 $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
@@ -307,11 +308,19 @@ if (isset($SERVER_CONFIG["canonicalPath"]))
     $symLinkCommand = new ScriptCommand('if exist "'.$SERVER_CONFIG["canonicalPath"].'" rmdir /s /q "'.$SERVER_CONFIG["canonicalPath"].'" &&  mklink /D "'.$SERVER_CONFIG["canonicalPath"].'" "'.$newFolderPath.'"');
 }
 
+
+function getOrCreateDirectoryCommand($directoryPath)
+{
+    return "[ -d '".$directoryPath."' ] &&  '".$directoryPath." exists!' || mkdir -p '".$directoryPath."' && '".$directoryPath." created.'";
+}
+
 $commands = [
+    new ScriptCommand(getOrCreateDirectoryCommand($REPOS_PATH)),
     $mkdirCommand,
     $gitCommand,
     // Need to be executed after because git needs an empty directory
-    "copy \"$composerAuthJSONPath\" \"$newFolderPath\"",  
+    // $copyAuthJsonCommand,
+    "copy \"$COMPOSER_AUTH_JSON_PATH\" \"$newFolderPath\"",  
     'mkdir "'.$newFolderPath.'\\.secret" && copy "'.$ENV_FILE_PATH.'" "'.$newFolderPath.'\\.secret\\env.php"',
     $composerInstallCommand,
     $generateConfCommand,
