@@ -331,7 +331,7 @@ function getOrCreateDirectoryCommand($directoryPath, $serverOS = "windows")
 }
 
 $commands = [
-    new ScriptCommand(getOrCreateDirectoryCommand($REPOS_PATH)),
+    new ScriptCommand(getOrCreateDirectoryCommand($REPOS_PATH, $serverOS)),
     $mkdirCommand,
     $gitCommand,
     // Need to be executed after because git needs an empty directory
