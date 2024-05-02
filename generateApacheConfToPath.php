@@ -52,6 +52,10 @@ function getConfString(
         RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
     </VirtualHost>
 
+    <?php if (empty($certificateFile) || empty($certificateKeyFile)) {
+        return ob_get_clean();
+    } ?>
+
     <VirtualHost *:443>
         ServerName <?php echo $serverName."\n\n"; ?>
         <?php
@@ -74,7 +78,8 @@ function getConfString(
             </FilesMatch>
         </Directory>
     </VirtualHost>
-    <?php
+    
+    <?php 
     return ob_get_clean(); // Get the buffer content and clean the buffer
 }
 

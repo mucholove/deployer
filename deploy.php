@@ -411,6 +411,11 @@ $commands = [
     $makeCanonicalPathCommand,
     $symLinkCommand,
     $seedCommand,
+    /*
+    // Sending the sudo command and password
+    $ssh->write("sudo -S $command\n");
+    $ssh->write("$password\n");
+    */
     $restartCommand,
 ];
 
