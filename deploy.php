@@ -1,6 +1,8 @@
 <?php
 
 $debug        = true;
+
+/*
 $rootLevel    = dirname(__FILE__, 4);
 $vendorLevel  = dirname(__FILE__, 3);
 $autoloadFile = $rootLevel."/vendor/autoload.php";
@@ -8,6 +10,24 @@ $autoloadFile = $rootLevel."/vendor/autoload.php";
 echo $autoloadFile."\n";
 
 require $autoloadFile;
+*/
+
+function findAutoloadFile() {
+    $dir = __DIR__;
+    while (!file_exists($dir . '/vendor/autoload.php')) {
+        $dir = dirname($dir);
+        if ($dir === '/') {
+            throw new Exception('Failed to find autoload.php. Run Composer install.');
+        }
+    }
+    return $dir . '/vendor/autoload.php';
+}
+
+$autoloadPath = getenv('COMPOSER_AUTOLOAD_PATH') ?: findAutoloadFile();
+
+echo "Autoload Path: ".$autoloadPath."\n";
+
+require $autoloadPath;
 
 /*
 
@@ -240,7 +260,17 @@ date_default_timezone_set($timezone);
 // Define the base path and create a new folder with the current datetime
 $dateTime      = new DateTime();
 $folderName    = $dateTime->format('Y-m-d_His');
-$newFolderPath = $REPOS_PATH.$folderName;
+
+$newFolderPath = null;
+
+if (str_ends_with($REPOS_PATH, "/") || str_ends_with($REPOS_PATH, "\\"))
+{
+    $newFolderPath = $REPOS_PATH.$folderName;
+}   
+else
+{
+    $newFolderPath = $REPOS_PATH.$GTK_DIRECTORY_SEPERATOR.$folderName;
+}
 
 
 $removeRepoDirectoryClosure = function() use ($ssh, $newFolderPath) {
@@ -258,6 +288,13 @@ $gitCommand->errorHandler = function ($scriptCommand, $output){};
 $documentRoot = $newFolderPath.'/www';
 
 $serverOS = $SERVER_CONFIG["SERVER_OS"] ?? "windows";
+
+$GTK_DIRECTORY_SEPERATOR = "/";
+
+if ($serverOS == "windows")
+{
+    $GTK_DIRECTORY_SEPERATOR = "\\";
+}
 
 $restartCommand             = null;
 $makeNewFolderPath               = null;
