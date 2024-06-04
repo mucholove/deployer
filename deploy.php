@@ -63,7 +63,12 @@ if ($argc < 2)
 
 $serverName = $argv[1]; // Get the server name from the command-line argument
 $rootLevel  = findRootLevel();
-$credentialsFilePath = $rootLevel."/.secret/servers/$serverName.php";
+$credentialsFilePath = implode($GTK_DIRECTORY_SEPERATOR, [
+    $rootLevel,
+    ".secret",
+    "servers",
+    $serverName.".php",
+]);
 
 echo "Looking for credentials file path at: ".$credentialsFilePath."\n";
 
@@ -296,7 +301,7 @@ $documentRoot = $newFolderPath.'/www';
 
 
 $restartCommand             = null;
-$makeNewFolderPath               = null;
+$makeNewFolderPath          = null;
 $copyConfToNewFolderPathEnv = null;
 $copyCommand                = null;
 
@@ -348,13 +353,26 @@ Permissions for 775 (OGO)
 5 for others: Everyone else has read (4) and execute (1) permissions, but no write permission. Sum = 5.
 
 */
-$copyConfToNewFolderPathEnv = new ScriptCommand($copyCommand.' "'.$apacheConfigFilePath.'" "'.$newFolderPath.'/.secret/apache_server.conf"');
+
+$apacheConfigCopyFilePath = implode($GTK_DIRECTORY_SEPERATOR, [
+    $newFolderPath,
+    ".secret",
+    "apache_server.conf",
+]);
+
+$copyConfToNewFolderPathEnv = new ScriptCommand($copyCommand.' "'.$apacheConfigFilePath.'" "'.$apacheConfigCopyFilePath.'"');
 
 
 $vendorName  = "mucholove";
 $libraryName = "deployer";
 
-$generateToConfScriptPath  = $newFolderPath.'/vendor/'.$vendorName.'/'.$libraryName.'/generateApacheConfToPath.php';
+$generateToConfScriptPath  = implode($GTK_DIRECTORY_SEPERATOR, [
+    $newFolderPath,
+    'vendor',
+    $vendorName,
+    $libraryName,
+    "generateApacheConfToPath.php",
+]);
 
 $generateConfString  = '';
 $generateConfString .= 'php "'.$generateToConfScriptPath.'"';
@@ -395,9 +413,13 @@ $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
         return null;
     }
 };
+$seedPath = implode($GTK_DIRECTORY_SEPERATOR, [
+    $newFolderPath,
+    'seed',
+    'seed.php',
+]);
 
-
-$seedCommand = new ScriptCommand('php "'.$newFolderPath.'/seed/seed.php"');
+$seedCommand = new ScriptCommand('php "'.$seedPath.'"');
 
 function getOrCreateDirectoryCommand($directoryPath, $serverOS = "windows")
 {
