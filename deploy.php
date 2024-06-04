@@ -35,6 +35,16 @@ echo "Autoload Path: ".$autoloadPath."\n";
 
 require $autoloadPath;
 
+
+$serverOS = $SERVER_CONFIG["SERVER_OS"] ?? "windows";
+
+$GTK_DIRECTORY_SEPERATOR = "/";
+
+if ($serverOS == "windows")
+{
+    $GTK_DIRECTORY_SEPERATOR = "\\";
+}
+
 /*
 
 sudo usermod -aG www-data deployer       # Adds 'deployer'      to the 'www-data' group
@@ -246,7 +256,6 @@ checkIfKeysExistOrDie([
 ], $SERVER_CONFIG);
 
 
-
 $password                  = $SERVER_CONFIG["password"];
 $githubPersonalAccessToken = $SERVER_CONFIG["githubPersonalAccessToken"];
 $apacheConfigFilePath      = $SERVER_CONFIG["APACHE_CONFIG_PATH"];
@@ -296,14 +305,6 @@ $gitCommand->errorHandler = function ($scriptCommand, $output){};
 
 $documentRoot = $newFolderPath.'/www';
 
-$serverOS = $SERVER_CONFIG["SERVER_OS"] ?? "windows";
-
-$GTK_DIRECTORY_SEPERATOR = "/";
-
-if ($serverOS == "windows")
-{
-    $GTK_DIRECTORY_SEPERATOR = "\\";
-}
 
 $restartCommand             = null;
 $makeNewFolderPath               = null;
