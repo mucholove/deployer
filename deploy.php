@@ -12,7 +12,8 @@ echo $autoloadFile."\n";
 require $autoloadFile;
 */
 
-function findAutoloadFile() {
+function findRootLevel()
+{
     $dir = __DIR__;
     while (!file_exists($dir . '/vendor/autoload.php')) {
         $dir = dirname($dir);
@@ -20,7 +21,12 @@ function findAutoloadFile() {
             throw new Exception('Failed to find autoload.php. Run Composer install.');
         }
     }
-    return $dir . '/vendor/autoload.php';
+    return $dir;
+}
+
+function findAutoloadFile() {
+    $rootLevel = findRootLevel();
+    return $rootLevel.'/vendor/autoload.php';
 }
 
 $autoloadPath = getenv('COMPOSER_AUTOLOAD_PATH') ?: findAutoloadFile();
@@ -57,6 +63,7 @@ if ($argc < 2)
 }
 
 $serverName = $argv[1]; // Get the server name from the command-line argument
+$rootLevel  = findRootLevel();
 $credentialsFilePath = $rootLevel."/.secret/servers/$serverName.php";
 
 echo "Looking for credentials file path at: ".$credentialsFilePath."\n";
