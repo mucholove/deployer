@@ -2,16 +2,6 @@
 
 $debug        = true;
 
-/*
-$rootLevel    = dirname(__FILE__, 4);
-$vendorLevel  = dirname(__FILE__, 3);
-$autoloadFile = $rootLevel."/vendor/autoload.php";
-
-echo $autoloadFile."\n";
-
-require $autoloadFile;
-*/
-
 function findRootLevel()
 {
     $dir = __DIR__;
@@ -34,7 +24,6 @@ $autoloadPath = getenv('COMPOSER_AUTOLOAD_PATH') ?: findAutoloadFile();
 echo "Autoload Path: ".$autoloadPath."\n";
 
 require $autoloadPath;
-
 
 $serverOS = $SERVER_CONFIG["SERVER_OS"] ?? "windows";
 
