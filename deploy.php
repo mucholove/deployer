@@ -244,12 +244,14 @@ $password                  = $SERVER_CONFIG["password"];
 $githubPersonalAccessToken = $SERVER_CONFIG["githubPersonalAccessToken"];
 $apacheConfigFilePath      = $SERVER_CONFIG["APACHE_CONFIG_PATH"];
 $serverName                = $SERVER_CONFIG["serverName"];
-$certificateFile           = $SERVER_CONFIG["apacheConfig"]["certificateFile"]    ?? $SERVER_CONFIG["certificateFile"];
-$certificateKeyFile        = $SERVER_CONFIG["apacheConfig"]["certificateKeyFile"] ?? $SERVER_CONFIG["certificateKeyFile"];
 $repo                      = $SERVER_CONFIG["gitHubRepo"];
 $REPOS_PATH                = $SERVER_CONFIG["REPOS_PATH"];
 $COMPOSER_AUTH_JSON_PATH   = $SERVER_CONFIG["COMPOSER_AUTH_JSON_PATH"];
 $ENV_FILE_PATH             = $SERVER_CONFIG["ENV_FILE_PATH"];
+
+
+$certificateFile           = $SERVER_CONFIG["apacheConfig"]["certificateFile"]    ?? $SERVER_CONFIG["certificateFile"];
+$certificateKeyFile        = $SERVER_CONFIG["apacheConfig"]["certificateKeyFile"] ?? $SERVER_CONFIG["certificateKeyFile"];
 
 // $timezone = date_default_timezone_get();
 $timezone = "America/Santo_Domingo";
@@ -361,9 +363,18 @@ $generateConfString  = '';
 $generateConfString .= 'php "'.$generateToConfScriptPath.'"';
 $generateConfString .= ' "'.$documentRoot.'"';
 $generateConfString .= ' "'.$apacheConfigFilePath.'"';
-$generateConfString .= ' "'.$serverName.'"';         
-$generateConfString .= ' "'.$certificateFile.'"';    
-$generateConfString .= ' "'.$certificateKeyFile.'"';
+$generateConfString .= ' "'.$serverName.'"';
+
+if ($certificateFile && $certificateKeyFile)
+{
+    $generateConfString .= ' "'.$certificateFile.'"';    
+    $generateConfString .= ' "'.$certificateKeyFile.'"';
+}
+else
+{
+    $generateConfString .= ' null null';
+
+}
 
 $generateConfCommand = new ScriptCommand($generateConfString);
 $generateConfCommand->onErrorClosure = $removeRepoDirectoryClosure;

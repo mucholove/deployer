@@ -34,6 +34,16 @@ function getConfString(
     $certificateKeyFile, 
     $serverAliases
 ){
+    if ($certificateFile)
+    {
+        $certificateFile = $certificateFile == 'null' ? null : $certificateFile;
+    }
+
+    if ($certificateKeyFile)
+    {
+        $certificateKeyFile = $certificateKeyFile == 'null' ? null : $certificateKeyFile;
+    }
+
     ob_start();
     ?>
     # CERTIFICATES AND VARIABLES
@@ -65,9 +75,11 @@ function getConfString(
         ?>
         DocumentRoot "<?php echo $documentRoot; ?>"
 
-        SSLEngine on
-        SSLCertificateFile "<?php echo $certificateFile; ?>"
-        SSLCertificateKeyFile "<?php echo $certificateKeyFile; ?>"
+        <?php if ($certificateFile && $certificateKeyFile): ?>
+            SSLEngine on
+            SSLCertificateFile "<?php echo $certificateFile; ?>"
+            SSLCertificateKeyFile "<?php echo $certificateKeyFile; ?>"
+        <?php endif; ?>
 
         <Directory "<?php echo $documentRoot; ?>">
             DirectoryIndex index.php
