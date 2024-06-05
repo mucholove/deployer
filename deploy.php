@@ -391,6 +391,13 @@ else
 
 }
 
+$composerJSONPath = implode($GTK_DIRECTORY_SEPERATOR, [
+    $newFolderPath,
+    "composer.json",
+]);
+
+
+
 $generateConfCommand = new ScriptCommand($generateConfString);
 $generateConfCommand->onErrorClosure = $removeRepoDirectoryClosure;
 
