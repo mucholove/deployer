@@ -462,8 +462,6 @@ if (isset($SERVER_CONFIG["canonicalPath"]))
     }    
 }
 
-
-
 $commands = [
     new ScriptCommand(getOrCreateDirectoryCommand($REPOS_PATH, $serverOS)),
     $makeNewFolderPath,
