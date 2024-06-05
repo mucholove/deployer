@@ -1,16 +1,7 @@
 <?php
 
 
-function findAutoloadFile() {
-    $dir = __DIR__;
-    while (!file_exists($dir . '/vendor/autoload.php')) {
-        $dir = dirname($dir);
-        if ($dir === '/') {
-            throw new Exception('Failed to find autoload.php. Run Composer install.');
-        }
-    }
-    return $dir . '/vendor/autoload.php';
-}
+require_once("find_autoload_file.php");
 
 $autoloadPath = getenv('COMPOSER_AUTOLOAD_PATH') ?: findAutoloadFile();
 
