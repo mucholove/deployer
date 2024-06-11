@@ -110,7 +110,9 @@ $filePutContentsResults = file_put_contents($writeToPath, $apacheConf);
 // Attempt to write the Apache configuration to the specified path and handle failure
 if ($filePutContentsResults === false) 
 {
-    die("Fatal: Failed to write the Apache configuration to $writeToPath\n");
+    echo "Fatal: Failed to write the Apache configuration to $writeToPath\n";
+    echo $apacheConf;
+    die(1);
 }
 
 echo "Apache configuration has been successfully written to $writeToPath\n";

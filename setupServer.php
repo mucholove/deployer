@@ -1,6 +1,5 @@
 <?php
 
-
 require_once("find_autoload_file.php");
 
 $autoloadPath = getenv('COMPOSER_AUTOLOAD_PATH') ?: findAutoloadFile();
