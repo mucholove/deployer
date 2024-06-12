@@ -7,6 +7,9 @@ $debug = true;
 $autoloadPath = getenv('COMPOSER_AUTOLOAD_PATH') ?: findAutoloadFile();
 require $autoloadPath;
 
+use phpseclib3\Net\SSH2;
+use phpseclib3\Net\SFTP;
+
 $serverOS = $SERVER_CONFIG["SERVER_OS"] ?? "windows";
 $GTK_DIRECTORY_SEPARATOR = ($serverOS == "windows") ? "\\" : "/";
 
@@ -44,91 +47,79 @@ if (!file_exists($credentialsFilePath)) {
 require $credentialsFilePath;
 
 // Initialize SSH and SFTP connections
-$ssh = new phpseclib3\Net\SSH2($SERVER_CONFIG['host'], $SERVER_CONFIG['port']);
-$sftp = new phpseclib3\Net\SFTP($SERVER_CONFIG['host'], $SERVER_CONFIG['port']);
+$ssh = new SSH2($SERVER_CONFIG['host'], $SERVER_CONFIG['port']);
+$sftp = new SFTP($SERVER_CONFIG['host'], $SERVER_CONFIG['port']);
 
+echo "Connecting to SSH and SFTP...\n";
 if (!$ssh->login($SERVER_CONFIG['username'], $SERVER_CONFIG['password']) || !$sftp->login($SERVER_CONFIG['username'], $SERVER_CONFIG['password'])) {
     die('Login failed');
 }
+echo "Connected successfully.\n";
 
 // Step 1: Download SQL Server Drivers
-$downloadScript = <<<EOT
-\$url = "https://go.microsoft.com/fwlink/?linkid=2258816";
-\$outputFile = "C:\\xampp\\php\\ext\\SQLSRV60.zip";
-\$client = new-object System.Net.WebClient;
-\$client.DownloadFile(\$url, \$outputFile);
-EOT;
+echo "Downloading SQL Server drivers...\n";
+$sqlsrvUrl = "https://go.microsoft.com/fwlink/?linkid=2258816";
+$sqlsrvZipLocalPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "SQLSRV60.zip";
+file_put_contents($sqlsrvZipLocalPath, file_get_contents($sqlsrvUrl));
+echo "Downloaded SQL Server drivers to $sqlsrvZipLocalPath\n";
 
-// Step 2: Extract the drivers
-$extractScript = <<<EOT
-Add-Type -AssemblyName System.IO.Compression.FileSystem;
-\$zipPath = "C:\\xampp\\php\\ext\\SQLSRV60.zip";
-\$extractPath = "C:\\xampp\\php\\ext\\sqlsrv";
-[System.IO.Compression.ZipFile]::ExtractToDirectory(\$zipPath, \$extractPath);
-EOT;
+// Step 2: Extract the drivers locally
+echo "Extracting SQL Server drivers...\n";
+$zip = new ZipArchive;
+$res = $zip->open($sqlsrvZipLocalPath);
+if ($res === TRUE) {
+    $extractPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "sqlsrv";
+    $zip->extractTo($extractPath);
+    $zip->close();
+    echo "Extracted SQL Server drivers to $extractPath\n";
+} else {
+    die("Error: Failed to extract SQLSRV60.zip\n");
+}
 
 // Step 3: Determine PHP version and copy appropriate DLLs
-$copyDllScript = <<<EOT
-\$phpVersion = (php -i | Select-String 'PHP Version' | ForEach-Object { \$_ -replace '^.*PHP Version => ', '' }).Trim();
-\$phpMajorVersion = \$phpVersion.Split('.')[0];
-\$phpMinorVersion = \$phpVersion.Split('.')[1];
-\$dllPath = "C:\\xampp\\php\\ext\\sqlsrv";
+echo "Determining PHP version on remote server...\n";
+$phpVersionOutput = $ssh->exec("php -r 'echo PHP_VERSION;'");
+$phpVersion = trim($phpVersionOutput);
+echo "PHP version on remote server: $phpVersion\n";
 
-\$dllFiles = switch ("\$phpMajorVersion.\$phpMinorVersion") {
-    "8.1" { "php_pdo_sqlsrv_81_ts_x64.dll", "php_sqlsrv_81_ts_x64.dll" }
-    "8.2" { "php_pdo_sqlsrv_82_ts_x64.dll", "php_sqlsrv_82_ts_x64.dll" }
-    "8.3" { "php_pdo_sqlsrv_83_ts_x64.dll", "php_sqlsrv_83_ts_x64.dll" }
-    default { throw "Unsupported PHP version: \$phpVersion" }
+$phpMajorMinorVersion = implode('.', array_slice(explode('.', $phpVersion), 0, 2));
+
+$dllFiles = [];
+switch ($phpMajorMinorVersion) {
+    case "8.1":
+        $dllFiles = ["php_pdo_sqlsrv_81_ts_x64.dll", "php_sqlsrv_81_ts_x64.dll"];
+        break;
+    case "8.2":
+        $dllFiles = ["php_pdo_sqlsrv_82_ts_x64.dll", "php_sqlsrv_82_ts_x64.dll"];
+        break;
+    case "8.3":
+        $dllFiles = ["php_pdo_sqlsrv_83_ts_x64.dll", "php_sqlsrv_83_ts_x64.dll"];
+        break;
+    default:
+        die("Unsupported PHP version: $phpVersion\n");
+}
+echo "DLL files to be copied: " . implode(', ', $dllFiles) . "\n";
+
+// Upload the relevant DLL files using SFTP
+foreach ($dllFiles as $dllFile) {
+    $localDllPath = $extractPath . DIRECTORY_SEPARATOR . $dllFile;
+    $remoteDllPath = "C:\\xampp\\php\\ext\\" . $dllFile;
+    echo "Uploading $dllFile to $remoteDllPath...\n";
+    $sftp->put($remoteDllPath, file_get_contents($localDllPath));
+    echo "Uploaded $dllFile successfully.\n";
 }
 
-foreach (\$dllFile in \$dllFiles) {
-    Copy-Item -Path "\$dllPath\\\$dllFile" -Destination "C:\\xampp\\php\\ext\\\$dllFile" -Force;
-}
-EOT;
-
-// Step 4: Modify php.ini
-$modifyIniScript = <<<EOT
-\$phpIniPath = "C:\\xampp\\php\\php.ini";
-\$phpIniContent = Get-Content \$phpIniPath;
-
-\$requiredExtensions = @(
-    "extension=bz2",
-    "extension=curl",
-    "extension=fileinfo",
-    "extension=gettext",
-    "extension=imap",
-    "extension=mbstring",
-    "extension=exif",
-    "extension=mysqli",
-    "extension=pdo_mysql",
-    "extension=pdo_pgsql",
-    "extension=pdo_sqlite",
-    "extension=pgsql",
-    "extension=zip",
-    "zend_extension=opcache",
-    "extension=php_sqlsrv.dll",
-    "extension=php_pdo_sqlsrv.dll"
-);
-
-foreach (\$extension in \$requiredExtensions) {
-    if (\$phpIniContent -match "^\s*;\s*\$extension") {
-        # Uncomment the extension if it is commented out
-        (Get-Content \$phpIniPath) -replace "^\s*;\s*(\$extension)", "\$extension" | Set-Content \$phpIniPath
-    } elseif (\$phpIniContent -notcontains \$extension) {
-        # Add the extension if it is not present
-        Add-Content -Path \$phpIniPath -Value \$extension;
-    }
-}
-EOT;
-
-// Execute scripts on the remote server
-$ssh->exec($downloadScript);
-$ssh->exec($extractScript);
-$ssh->exec($copyDllScript);
-$ssh->exec($modifyIniScript);
+// Upload the modified php.ini file using SFTP
+$localPhpIniPath = __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . "php.ini";
+$remotePhpIniPath = "C:\\xampp\\php\\php.ini";
+echo "Uploading php.ini to $remotePhpIniPath...\n";
+$sftp->put($remotePhpIniPath, file_get_contents($localPhpIniPath));
+echo "Uploaded php.ini successfully.\n";
 
 // Restart Apache
+echo "Restarting Apache...\n";
 $ssh->exec('C:\\xampp\\apache\\bin\\httpd.exe -k restart');
+echo "Restarted Apache successfully.\n";
 
-echo "SQL Server drivers installed and XAMPP configured successfully.";
+echo "SQL Server drivers installed and XAMPP configured successfully.\n";
 ?>
