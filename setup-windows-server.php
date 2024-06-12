@@ -44,8 +44,8 @@ if (!file_exists($credentialsFilePath)) {
 require $credentialsFilePath;
 
 // Initialize SSH and SFTP connections
-$ssh = new SSH2($SERVER_CONFIG['host'], $SERVER_CONFIG['port']);
-$sftp = new SFTP($SERVER_CONFIG['host'], $SERVER_CONFIG['port']);
+$ssh = new phpseclib3\Net\SSH2($SERVER_CONFIG['host'], $SERVER_CONFIG['port']);
+$sftp = new phpseclib3\Net\SFTP($SERVER_CONFIG['host'], $SERVER_CONFIG['port']);
 
 if (!$ssh->login($SERVER_CONFIG['username'], $SERVER_CONFIG['password']) || !$sftp->login($SERVER_CONFIG['username'], $SERVER_CONFIG['password'])) {
     die('Login failed');
