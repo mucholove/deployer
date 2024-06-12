@@ -6,7 +6,7 @@ $debug        = true;
 
 $autoloadPath = getenv('COMPOSER_AUTOLOAD_PATH') ?: findAutoloadFile();
 
-echo "Autoload Path: ".$autoloadPath."\n";
+// echo "Autoload Path: ".$autoloadPath."\n";
 
 require $autoloadPath;
 
