@@ -110,7 +110,7 @@ foreach ($dllFiles as $dllFile) {
 }
 
 // Upload the modified php.ini file using SFTP
-$localPhpIniPath = __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . "php.ini";
+$localPhpIniPath = __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . "windows" . DIRECTORY_SEPARATOR ."php.ini";
 $remotePhpIniPath = "C:\\xampp\\php\\php.ini";
 echo "Uploading php.ini to $remotePhpIniPath...\n";
 $sftp->put($remotePhpIniPath, file_get_contents($localPhpIniPath));
