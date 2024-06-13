@@ -2,8 +2,18 @@
     "name": "mucholove/deployer",
     "description": "Deploys Apps",
     "type": "project",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/mucholove/gtk-helpers"
+        }
+    ],
     "require": {
-        "phpseclib/phpseclib": "^3.0"
+        "gtk/gtk-helpers": "dev-main",
+        "phpseclib/phpseclib": "^3.0",
+        "knplabs/github-api": "^3.0",
+        "guzzlehttp/guzzle": "^7.0.1",
+        "http-interop/http-factory-guzzle": "^1.0"
     },
     "license": "MIT",
     "autoload": {
@@ -19,5 +29,10 @@
             "email": "gustavo@froml.com"
         }
     ],
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": false
+        }
+    }
 }
