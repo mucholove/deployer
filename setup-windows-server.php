@@ -2,7 +2,7 @@
 
 require_once('find_autoload_file.php');
 
-$debug = true;
+$debug = false;
 
 $autoloadPath = getenv('COMPOSER_AUTOLOAD_PATH') ?: findAutoloadFile();
 require $autoloadPath;
