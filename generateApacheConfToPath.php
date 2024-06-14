@@ -27,23 +27,8 @@ $certificateFile    = $argv[4];
 $certificateKeyFile = $argv[5];
 
 
-function getConfString(
-    $serverName, 
-    $documentRoot, 
-    $certificateFile, 
-    $certificateKeyFile, 
-    $serverAliases
-){
-    if ($certificateFile)
-    {
-        $certificateFile = $certificateFile == 'null' ? null : $certificateFile;
-    }
-
-    if ($certificateKeyFile)
-    {
-        $certificateKeyFile = $certificateKeyFile == 'null' ? null : $certificateKeyFile;
-    }
-
+function generateHTTPSConfig($serverName, $serverAliases, $documentRoot, $certificateFile, $certificateKeyFile)
+{
     ob_start();
     ?>
     # CERTIFICATES AND VARIABLES
@@ -61,10 +46,6 @@ function getConfString(
         RewriteCond %{HTTPS} off
         RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
     </VirtualHost>
-
-    <?php if (empty($certificateFile) || empty($certificateKeyFile)) {
-        return ob_get_clean();
-    } ?>
 
     <VirtualHost *:443>
         ServerName <?php echo $serverName."\n\n"; ?>
@@ -93,6 +74,87 @@ function getConfString(
     
     <?php 
     return ob_get_clean(); // Get the buffer content and clean the buffer
+}
+
+function generateInsecureConfig($serverName, $serverAliases, $documentRoot)
+{
+    ob_start();
+    ?>
+    <VirtualHost *:80>
+    ServerName <?php echo $serverName."\n\n"; ?>
+    <?php
+    foreach ($serverAliases as $serverAlias) {
+        echo "ServerAlias $serverAlias\n";
+    }
+    ?>
+    DocumentRoot "<?php echo $documentRoot; ?>"
+
+    <Directory "<?php echo $documentRoot; ?>">
+        DirectoryIndex index.php
+        AllowOverride All
+        Require all granted
+        <FilesMatch \.php$>
+            SetHandler application/x-httpd-php
+        </FilesMatch>
+    </Directory>
+    </VirtualHost>
+
+    <VirtualHost *:443>
+        ServerName <?php echo $serverName."\n\n"; ?>
+        <?php
+        foreach ($serverAliases as $serverAlias) {
+            echo "ServerAlias $serverAlias\n";
+        }
+        ?>
+        DocumentRoot <?php echo $documentRoot; ?>
+
+        # Redirect all HTTP traffic to HTTPS
+        RewriteEngine On
+        RewriteCond %{HTTPS} off
+        RewriteRule ^(.*)$ http://%{HTTP_HOST}:80%{REQUEST_URI} [L,R=301]
+    </VirtualHost>
+
+<?php 
+return ob_get_clean(); // Get the buffer content and clean the buffer
+}
+
+function getConfString(
+    $serverName, 
+    $documentRoot, 
+    $certificateFile, 
+    $certificateKeyFile, 
+    $serverAliases
+){
+    if ($certificateFile)
+    {
+        $certificateFile = $certificateFile == 'null' ? null : $certificateFile;
+    }
+
+    if ($certificateKeyFile)
+    {
+        $certificateKeyFile = $certificateKeyFile == 'null' ? null : $certificateKeyFile;
+    }
+
+    if ($certificateFile && $certificateKeyFile)
+    {
+        return generateHTTPSConfig(
+            $serverName, 
+            $serverAliases, 
+            $documentRoot, 
+            $certificateFile, 
+            $certificateKeyFile
+        );
+    }
+    else
+    {
+        return generateInsecureConfig(
+            $serverName, 
+            $serverAliases, 
+            $documentRoot
+        );
+    }
+
+
 }
 
 
