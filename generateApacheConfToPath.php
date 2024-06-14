@@ -99,6 +99,11 @@ function generateInsecureConfig($serverName, $serverAliases, $documentRoot)
     </Directory>
     </VirtualHost>
 
+
+
+<?php 
+return ob_get_clean(); // Get the buffer content and clean the buffer
+/*
     <VirtualHost *:443>
         ServerName <?php echo $serverName."\n\n"; ?>
         <?php
@@ -113,9 +118,7 @@ function generateInsecureConfig($serverName, $serverAliases, $documentRoot)
         RewriteCond %{HTTPS} off
         RewriteRule ^(.*)$ http://%{HTTP_HOST}:80%{REQUEST_URI} [L,R=301]
     </VirtualHost>
-
-<?php 
-return ob_get_clean(); // Get the buffer content and clean the buffer
+*/
 }
 
 function getConfString(
