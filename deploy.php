@@ -154,6 +154,30 @@ $username = $SERVER_CONFIG["username"];
 
 $ssh = new phpseclib3\Net\SSH2($host, $port ?? 22);
 
+// Try SSH config first if hostname is provided
+if (isset($SERVER_CONFIG["sshConfigHostname"])) 
+{
+    try 
+    {
+        $configuration = new phpseclib3\System\SSH\Configuration();
+        $config = $configuration->getHost($SERVER_CONFIG["sshConfigHostname"]);
+        
+        if (isset($config['identityfile'])) {
+            $key = \phpseclib3\Crypt\PublicKeyLoader::load(file_get_contents($config['identityfile']));
+            if ($ssh->login($config['user'], $key)) {
+                // Successfully authenticated via SSH config
+                goto connection_successful;
+            }
+        }
+    } 
+    catch (Exception $e) 
+    {
+        // SSH config authentication failed, fall back to password auth
+        echo "SSH config auth failed: " . $e->getMessage() . "\n";
+        die();
+    }
+}
+
 switch ($serverAuthenticationMethod) 
 {
     case SSHAuthMethod::Password:
@@ -220,7 +244,7 @@ switch ($serverAuthenticationMethod)
         break;
 }
 
-
+connection_successful:
 if (!$ssh->isConnected()) 
 {
     throw new Exception("Unable to connect.");
