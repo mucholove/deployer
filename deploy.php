@@ -152,14 +152,14 @@ $host     = $SERVER_CONFIG["host"];
 $port     = $SERVER_CONFIG["port"];
 $username = $SERVER_CONFIG["username"];
 
-$ssh = new phpseclib3\Net\SSH2($host, $port ?? 22);
+$ssh = new \phpseclib3\Net\SSH2($host, $port ?? 22);
 
 // Try SSH config first if hostname is provided
 if (isset($SERVER_CONFIG["sshConfigHostname"])) 
 {
     try 
     {
-        $configuration = new phpseclib3\System\SSH\Configuration();
+        $configuration = new \phpseclib3\System\SSH\Configuration();
         $config = $configuration->getHost($SERVER_CONFIG["sshConfigHostname"]);
         
         if (isset($config['identityfile'])) {
