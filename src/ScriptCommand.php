@@ -30,7 +30,7 @@ class ScriptCommand
         if ($exitStatus)
         {
             $stdErr = $ssh->getStdError();
-            return "Error executing command: $this->command. Exit status: $exitStatus. Output: $output. Std-Err: $stdErr \n";
+            return "Error executing command: BEGIN:: $this->command ::END Exit status: $exitStatus. Output: $output. Std-Err: $stdErr \n";
         }
 
         if ($this->errorHandler)
@@ -42,7 +42,7 @@ class ScriptCommand
         {
             if (strpos($output, 'error') !== false || strpos($output, 'fatal:') !== false) 
             {
-                return "Error executing command: $this->command. Output: $output\n";
+                return "Error executing command - BEGIN::  $this->command ::END - Output: $output\n";
             }
         }
         return null;

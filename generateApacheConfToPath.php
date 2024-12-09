@@ -7,6 +7,8 @@ echo "Will autoload from...: ".$autoloadFile."\n";
 
 require $autoloadFile;
 
+echo "Did autoload from...: ".$autoloadFile."\n";
+
 $serverAliases = [];
 
 if ($argc < 6) 
@@ -169,8 +171,14 @@ $apacheConf = getConfString(
     $serverAliases
 );
 
+echo "Generated Apache configuration:\n";
+echo $apacheConf;
+echo "\n";
+echo "Will write to path: $writeToPath\n";
+
 $filePutContentsResults = file_put_contents($writeToPath, $apacheConf);
 
+echo "file_put_contents results: $filePutContentsResults\n";
 
 // Attempt to write the Apache configuration to the specified path and handle failure
 if ($filePutContentsResults === false) 

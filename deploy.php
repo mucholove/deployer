@@ -398,7 +398,7 @@ $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
 
     if ($hasError)
     {
-        return "Error executing command: $scriptCommand->command. Output: $output\n";
+        return "Error executing command - BEGIN:: $scriptCommand->command ::END - Output: $output\n";
     }
     else
     {
