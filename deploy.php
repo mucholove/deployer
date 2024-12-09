@@ -12,12 +12,25 @@ require $autoloadPath;
 
 $serverOS = $SERVER_CONFIG["SERVER_OS"] ?? "windows";
 
-$GTK_DIRECTORY_SEPERATOR = "/";
+$GTK_DIRECTORY_SEPERATOR_SERVER = "/";
 
 if ($serverOS == "windows")
 {
-    $GTK_DIRECTORY_SEPERATOR = "\\";
+    $GTK_DIRECTORY_SEPERATOR_SERVER = "\\";
 }
+
+$GTK_DIRECTORY_SEPERATOR_LOCAL = null;
+
+if (defined('DIRECTORY_SEPARATOR')) 
+{
+    $GTK_DIRECTORY_SEPERATOR_LOCAL = DIRECTORY_SEPARATOR;
+} 
+else 
+{
+    // Fallback method to determine the separator
+    $GTK_DIRECTORY_SEPERATOR_LOCAL = (stripos(PHP_OS, 'WIN') === 0) ? '\\' : '/';
+}
+
 
 /*
 
@@ -47,8 +60,10 @@ if ($argc < 2)
 }
 
 $serverName = $argv[1]; // Get the server name from the command-line argument
+
 $rootLevel  = findRootLevel();
-$credentialsFilePath = implode($GTK_DIRECTORY_SEPERATOR, [
+
+$credentialsFilePath = implode($GTK_DIRECTORY_SEPERATOR_LOCAL, [
     $rootLevel,
     ".secret",
     "servers",
@@ -137,7 +152,31 @@ $host     = $SERVER_CONFIG["host"];
 $port     = $SERVER_CONFIG["port"];
 $username = $SERVER_CONFIG["username"];
 
-$ssh = new phpseclib3\Net\SSH2($host, $port ?? 22);
+$ssh = new \phpseclib3\Net\SSH2($host, $port ?? 22);
+
+// Try SSH config first if hostname is provided
+if (isset($SERVER_CONFIG["sshConfigHostname"])) 
+{
+    try 
+    {
+        $configuration = new \phpseclib3\System\SSH\Configuration();
+        $config = $configuration->getHost($SERVER_CONFIG["sshConfigHostname"]);
+        
+        if (isset($config['identityfile'])) {
+            $key = \phpseclib3\Crypt\PublicKeyLoader::load(file_get_contents($config['identityfile']));
+            if ($ssh->login($config['user'], $key)) {
+                // Successfully authenticated via SSH config
+                goto connection_successful;
+            }
+        }
+    } 
+    catch (Exception $e) 
+    {
+        // SSH config authentication failed, fall back to password auth
+        echo "SSH config auth failed: " . $e->getMessage() . "\n";
+        die();
+    }
+}
 
 switch ($serverAuthenticationMethod) 
 {
@@ -205,7 +244,7 @@ switch ($serverAuthenticationMethod)
         break;
 }
 
-
+connection_successful:
 if (!$ssh->isConnected()) 
 {
     throw new Exception("Unable to connect.");
@@ -266,7 +305,7 @@ if (str_ends_with($REPOS_PATH, "/") || str_ends_with($REPOS_PATH, "\\"))
 }   
 else
 {
-    $newFolderPath = $REPOS_PATH.$GTK_DIRECTORY_SEPERATOR.$folderName;
+    $newFolderPath = $REPOS_PATH.$GTK_DIRECTORY_SEPERATOR_SERVER.$folderName;
 }
 
 
@@ -339,7 +378,7 @@ Permissions for 775 (OGO)
 
 */
 
-$apacheConfigCopyFilePath = implode($GTK_DIRECTORY_SEPERATOR, [
+$apacheConfigCopyFilePath = implode($GTK_DIRECTORY_SEPERATOR_SERVER, [
     $newFolderPath,
     ".secret",
     "apache_server.conf",
@@ -351,7 +390,7 @@ $copyConfToNewFolderPathEnv = new ScriptCommand($copyCommand.' "'.$apacheConfigF
 $vendorName  = "mucholove";
 $libraryName = "deployer";
 
-$generateToConfScriptPath  = implode($GTK_DIRECTORY_SEPERATOR, [
+$generateToConfScriptPath  = implode($GTK_DIRECTORY_SEPERATOR_SERVER, [
     $newFolderPath,
     'vendor',
     $vendorName,
@@ -376,7 +415,7 @@ else
 
 }
 
-$composerJSONPath = implode($GTK_DIRECTORY_SEPERATOR, [
+$composerJSONPath = implode($GTK_DIRECTORY_SEPERATOR_SERVER, [
     $newFolderPath,
     "composer.json",
 ]);
@@ -405,7 +444,7 @@ $composerInstallCommand->errorHandler = function ($scriptCommand, $output) {
         return null;
     }
 };
-$seedPath = implode($GTK_DIRECTORY_SEPERATOR, [
+$seedPath = implode($GTK_DIRECTORY_SEPERATOR_SERVER, [
     $newFolderPath,
     'seed',
     'seed.php',
