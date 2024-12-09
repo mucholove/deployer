@@ -535,6 +535,7 @@ foreach ($commands as $command)
     if ($toExecute)
     {
         $toExecute->executeOrDieOnSSH($ssh);
+        $ssh->reset();
     }
 }
 
