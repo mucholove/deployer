@@ -534,16 +534,11 @@ foreach ($commands as $index => $command)
 
     if ($toExecute)
     {
-        $toExecute->executeOrDieOnSSH($ssh, function () use ($index, $reCommands){
-            foreach ($reCommands as $reCommand) 
+        $toExecute->executeOrDieOnSSH($ssh, function () use ($index, $commands){
+            echo "Remaining to run:\n";
+            for ($i = $index + 1; $i < count($commands); $i++) 
             {
-                // TODO: Print all commands remaining in the "commands" array such
-                // such that I can manually copy paste them and run them on server
-                echo "Remaining to run:\n";
-                for ($i = $index + 1; $i < count($reCommands); $i++) 
-                {
-                    echo "\t-   ".$reCommands[$i]->command."\n";
-                }
+                echo "\t-   ".$commands[$i]->command."\n";
             }
         });
         $ssh->reset();
