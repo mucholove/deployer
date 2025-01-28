@@ -519,7 +519,7 @@ $commands = [
 $baseScriptCommand = new ScriptCommand("");
 $baseScriptCommand->onErrorClosure = $removeRepoDirectoryClosure;
 
-foreach ($commands as $command) 
+foreach ($commands as $index => $command) 
 {
     $toExecute = null;
     if (is_string($command))
@@ -534,7 +534,18 @@ foreach ($commands as $command)
 
     if ($toExecute)
     {
-        $toExecute->executeOrDieOnSSH($ssh);
+        $toExecute->executeOrDieOnSSH($ssh, function () use ($index, $reCommands){
+            foreach ($reCommands as $reCommand) 
+            {
+                // TODO: Print all commands remaining in the "commands" array such
+                // such that I can manually copy paste them and run them on server
+                echo "Remaining to run:\n";
+                for ($i = $index + 1; $i < count($reCommands); $i++) 
+                {
+                    echo "\t-   ".$reCommands[$i]->command."\n";
+                }
+            }
+        });
         $ssh->reset();
     }
 }
